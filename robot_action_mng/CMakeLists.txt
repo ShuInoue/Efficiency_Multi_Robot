@@ -122,6 +122,7 @@ catkin_package(
 include_directories(
  include
   ${catkin_INCLUDE_DIRS}
+  "/usr/include/eigen3"
 )
 
 ## Declare a C++ library
@@ -201,7 +202,6 @@ include_directories(
 
 ## Add folders to be run by python nosetests
 # catkin_add_nosetests(test)
-
 add_executable(robot1_action src/robot1_action.cpp)
 target_link_libraries(robot1_action ${catkin_LIBRARIES})
 add_executable(robot2_action src/robot2_action.cpp)

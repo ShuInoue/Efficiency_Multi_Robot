@@ -1,4 +1,8 @@
 #include<robot_action_mng/robot1_action.hpp>
+#include<Eigen/Geometry>
+
+float robot1_init_x;
+float robot1_init_y;
 
 robot1_action::robot1_action()
 {
@@ -110,11 +114,18 @@ void robot1_action::moveToGoal(double goalX,double goalY,std::string mapFrame,st
 
 	goal.target_pose.pose.position.x =  goalX;
 	goal.target_pose.pose.position.y =  goalY;
-	goal.target_pose.pose.position.z =  0.0;
-	goal.target_pose.pose.orientation.x = 0.0;
-	goal.target_pose.pose.orientation.y = 0.0;
-	goal.target_pose.pose.orientation.z = 0.0;
-	goal.target_pose.pose.orientation.w = 1.0;
+    Eigen::Vector2d startToGoal(goal.target_pose.pose.position.x-robot1_init_x,goal.target_pose.pose.position.y-robot1_init_y);
+    startToGoal.normalize();
+    Eigen::Quaterniond q = Eigen::Quaterniond::FromTwoVectors(Eigen::Vector3d::UnitX(),Eigen::Vector3d(startToGoal.x(),startToGoal.y(),0.0));
+	std::cout << "q.x = " << q.x() << std::endl;
+	std::cout << "q.y = " << q.y() << std::endl;
+	std::cout << "q.z = " << q.z() << std::endl;
+	std::cout << "q.w = " << q.w() << std::endl;
+
+    goal.target_pose.pose.orientation.x = q.x();
+    goal.target_pose.pose.orientation.y = q.y();
+    goal.target_pose.pose.orientation.z = q.z();
+    goal.target_pose.pose.orientation.w = q.w();
 
 	std::cout << "＊＊＊＊＊＊＊＊＊＊目標座標セット(" << goalX << "," << goalY << ")＊＊＊＊＊＊＊＊＊＊" << std::endl;
 
@@ -123,10 +134,10 @@ void robot1_action::moveToGoal(double goalX,double goalY,std::string mapFrame,st
 	goalpose.pose.position.x = goalX;
 	goalpose.pose.position.y = goalY;
 	goalpose.pose.position.z = 0.0;
-	goalpose.pose.orientation.x=0.0;
-	goalpose.pose.orientation.y=0.0;
-	goalpose.pose.orientation.z=0.0;
-	goalpose.pose.orientation.w=1.0;
+	goalpose.pose.orientation.x=q.x();
+	goalpose.pose.orientation.y=q.y();
+	goalpose.pose.orientation.z=q.z();
+	goalpose.pose.orientation.w=q.w();
 	goalpose.header.frame_id = mapFrame;
 
 	std::cout << "＊＊＊＊＊＊＊＊＊＊経路を作成中＊＊＊＊＊＊＊＊＊＊" << std::endl;
@@ -171,6 +182,8 @@ int main(int argc, char** argv)
 
 	R1A.param1.getParam("/multi_planning_server/robot1_action/map_frame1",R1A.frame_id);
 	R1A.param1.getParam("/multi_planning_server/robot1_action/move_base_node1",R1A.move_base_node);
+	R1A.param1.getParam("/robot1_init_x",robot1_init_x);
+	R1A.param1.getParam("/robot1_init_y",robot1_init_y);
 
     while(ros::ok())
     {

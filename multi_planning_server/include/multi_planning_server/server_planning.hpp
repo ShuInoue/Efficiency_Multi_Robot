@@ -15,6 +15,7 @@
 #include<sstream>
 #include<string>
 
+
 using std::cout;
 using std::endl;
 
@@ -1085,12 +1086,21 @@ int server_planning::update_target(bool reset)
     final_target2_update.pose.orientation.w = 1.0;
     update_target_count++;
 
-    if(final_target1_update.pose.position.x == final_target2_update.pose.position.x && final_target1_update.pose.position.y == final_target2_update.pose.position.y)
+    if(final_target1_update.pose.position.x == final_target2_update.pose.position.x + robot2_init_x && final_target1_update.pose.position.y == final_target2_update.pose.position.y + robot2_init_y)
     {
         return 0;
     }
+    if(final_target1_update.pose.position.x == 0 && final_target1_update.pose.position.y == 0)
+    {
+        return 0;
+    }
+    if(final_target2_update.pose.position.x == 0 && final_target2_update.pose.position.y == 0)
+    {
+        return 0;
+    }
+    
 
-    check_avoid_target = sqrt(pow(final_target1_update.pose.position.x - (final_target2_update.pose.position.x + 3.0), 2) + pow(final_target1_update.pose.position.y - (final_target2_update.pose.position.y), 2));
+    check_avoid_target = sqrt(pow(final_target1_update.pose.position.x - (final_target2_update.pose.position.x + robot2_init_x), 2) + pow(final_target1_update.pose.position.y - (final_target2_update.pose.position.y + robot2_init_y), 2));
     if(check_avoid_target >= avoid_target)
     {
         cout << "final_target1_update:" << final_target1_update << endl;
