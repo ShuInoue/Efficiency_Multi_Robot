@@ -116,6 +116,7 @@ int main(int argc, char **argv)
         if(SP.map_isinput())
         {
             //Frontier_Searchからの座標を取得
+            RERUN_FRONTIER:
             while(!SP.queueF_judge && ros::ok())
             {
                 SP.queueF.callOne(ros::WallDuration(1));//FSノードから出てきた座標の情報を格納しているキューを購読しマップ配列の座標と対応する箇所を１，その他を０で埋める。
@@ -133,6 +134,16 @@ int main(int argc, char **argv)
                 SP.Extraction_Target();
                 SP.Publish_marker();
                 SP.FT2robots();//取得したフロンティア領域を各ロボットの目的地として配布。
+                if(SP.non_extracted_r1 == true && SP.non_extracted_r2 == true)
+                {
+                    static int non_extracted_rs_count = 0;
+                    if(non_extracted_rs_count == 10)
+                    {
+                        std::cout << "Extracted error." << std::endl;
+                        exit(0);
+                    }
+                    goto RERUN_FRONTIER;
+                }
                 SP.OptimalTarget();
                 SP.arrive1 = 0;
                 SP.arrive2 = 0;

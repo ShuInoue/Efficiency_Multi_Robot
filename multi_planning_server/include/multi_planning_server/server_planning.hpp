@@ -98,6 +98,8 @@ class server_planning
     int receive_robot_path_wait_time;
 
 
+
+
     public:
     server_planning();
     ~server_planning();
@@ -187,6 +189,9 @@ class server_planning
     std_msgs::String sub_msg;//これ多分使ってないからいらないと思う。
     
 
+    //ボロノイ抽出で抽出出来たかを判定するフラグ
+    bool non_extracted_r1;
+    bool non_extracted_r2;
 
     //その他
     bool isinput;
@@ -208,8 +213,8 @@ class server_planning
 
 server_planning::server_planning():
 robot_front_point(0.5),
-search_length(0.1),
-avoid_target(0.1),
+search_length(0.3),
+avoid_target(1),
 receive_robot_path_wait_time(2)
 {
     nh1.setCallbackQueue(&queue1);
@@ -763,6 +768,11 @@ void server_planning::FT2robots(void)
         robot1_final_target_pub.publish(stop_pose);
         cout << "test_count: " << test_count << endl;
     }
+    else
+    {
+        non_extracted_r1 == true;
+        cout << "non_extracted_r1: " << non_extracted_r1 << endl;
+    }
     cout << "test2" << endl;
     test_count = 0;
     if(Extraction_Target_r2.size() != 0)
@@ -794,6 +804,11 @@ void server_planning::FT2robots(void)
         cout << "test_count: " << test_count << endl;
         stop_pose.header.frame_id = robot2header;
         target2robot2.publish(stop_pose);
+    }
+    else
+    {
+        non_extracted_r2 == true;
+        cout << "non_extracted_r2" << non_extracted_r2 << endl;
     }
     cout << "[FT2robots end]----------------------------------------\n" << endl;
 }
