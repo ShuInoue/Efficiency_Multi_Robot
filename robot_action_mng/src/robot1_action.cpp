@@ -6,7 +6,7 @@ robot1_action::robot1_action()
 	robot1_pub_nh.setCallbackQueue(&robot1_pub_queue);
 	robot1_sub_nh.setCallbackQueue(&robot1_sub_queue);
 	robot1_odom_sub_nh.setCallbackQueue(&robot1_odom_queue);
-    robot1_sub = robot1_sub_nh.subscribe("/robot1/final_target", 1, &robot1_action::data_setter, this);
+    robot1_sub = robot1_sub_nh.subscribe("/robot1/move_base_simple/goal", 1, &robot1_action::data_setter, this);
 	robot1_odom_sub = robot1_odom_sub_nh.subscribe("/robot1/odom", 1, &robot1_action::escape_robot_stack, this);
 	robot1_pub = robot1_pub_nh.advertise<std_msgs::Int8>("/arrive_flag1", 1);
 	robot1_test_pub = robot1_test_pub_nh.advertise<geometry_msgs::PoseStamped>("/robot1/move_base_simple/goal", 1);
