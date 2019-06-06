@@ -708,10 +708,10 @@ void server_planning::FT2robots(void)
 
     cluster_queue.callOne(ros::WallDuration(0.2));
 
-    if(robot1TARGET.size() != 0)
+    if(Extraction_Target_r1.size() != 0)
     {
         cout << "first if" << endl;
-        for(int i = 0; i < robot1TARGET.size(); i++)
+        for(int i = 0; i < Extraction_Target_r1.size(); i++)
         {
             cout << "for start" << endl;
             robot1TARGET[i].header.frame_id = robot1header;
@@ -720,10 +720,10 @@ void server_planning::FT2robots(void)
             robot1TARGET[i].pose.position.y = Extraction_Target_r1[i].pose.position.y;
             target2robot1.publish(robot1TARGET[i]);
             //robot1_final_target_pub.publish(robot1TARGET[i]);
-            if(i == robot1TARGET.size()-1) break;
+            if(i == Extraction_Target_r1.size()-1) break;
             while(!robot1_path_update_flag && ros::ok())
             {
-                if(i == robot1TARGET.size()-1)break;
+                if(i == Extraction_Target_r1.size()-1)break;
                 else
                 {
                     cout << "robot1 target : " << robot1TARGET[i] << endl;
@@ -755,9 +755,9 @@ void server_planning::FT2robots(void)
     }
     cout << "test2" << endl;
     test_count = 0;
-    if(robot1TARGET.size() != 0)
+    if(Extraction_Target_r2.size() != 0)
     {
-        for(int i = 0; i < robot1TARGET.size(); i++)
+        for(int i = 0; i < Extraction_Target_r2.size(); i++)
         {
             robot2TARGET[i].header.frame_id = robot2header;
             robot2TARGET[i].header.seq = i;
@@ -767,7 +767,7 @@ void server_planning::FT2robots(void)
             //robot2_final_target_pub.publish(robot2TARGET[i]);
             while(!robot2_path_update_flag && ros::ok())
             {
-                if(i == robot1TARGET.size()-1)break;
+                if(i == Extraction_Target_r2.size()-1)break;
                 else
                 {
                     target2robot2.publish(robot2TARGET[i]);
@@ -986,41 +986,30 @@ void server_planning::Publish_marker(void)
 
 void server_planning::Clear_Vector(void)
 {
-    cout << "Clear_Vector" << endl;
 	pre_frox.clear();
 	pre_frox.shrink_to_fit();
-    cout << "pre_frox" << endl;
 	pre_froy.clear();
 	pre_froy.shrink_to_fit();
-    cout << "pre_froy" << endl;
     Extraction_Target_r1.clear();
 	Extraction_Target_r1.shrink_to_fit();
-    cout << "Extraction_Target_r1" << endl;
     Extraction_Target_r2.clear();
 	Extraction_Target_r2.shrink_to_fit();
-    cout << "Extraction_Target_r2" << endl;
     robot1lengths.clear();
 	robot1lengths.shrink_to_fit();
-    cout << "robot1lengths" << endl;
     robot2lengths.clear();
 	robot2lengths.shrink_to_fit();
-    cout << "robot2lengths" << endl;
     robot1TARGET.clear();
     robot1TARGET.shrink_to_fit();
-    cout << "robot1TARGET" << endl;
     robot2TARGET.clear();
     robot2TARGET.shrink_to_fit();
-    cout << "robot2TARGET" << endl;
     for_sort.clear();
     for_sort.shrink_to_fit();
-    cout << "for_sort" << endl;
 }
 
 void server_planning::Clear_Num(void)
 {
     robot1path_count = 0;
     robot2path_count = 0;
-    cout << "Clear_Num" << endl;
 }
 void server_planning::arrive1_flag(const std_msgs::Int8::ConstPtr &msg)
 {
