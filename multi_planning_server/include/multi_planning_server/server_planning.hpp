@@ -348,10 +348,14 @@ void server_planning::OptimalTarget(void)
 
     for(int i=0; i<robot1lengths.size(); i++)
     {
-        cout << "robot1legnths[" << i << "] : "<< std::get<3>(robot1lengths[i]) << endl;
-        if(std::get<3>(robot1lengths[i]) == 0)
+        if(std::get<3>(robot1lengths[i]) == 0.0)
         {
             robot1lengths.erase(robot1lengths.begin() + i);
+            cout << "erased" << endl;
+        }
+        else
+        {
+            cout << "robot1legnths[" << i << "] : "<< std::get<3>(robot1lengths[i]) << endl;
         }
     }
     robot1lengths.shrink_to_fit();
@@ -361,11 +365,11 @@ void server_planning::OptimalTarget(void)
     }
     for(int i=0; i<robot2lengths.size(); i++)
     {
-        cout << "robot2legnths[" << i << "] : "<< std::get<3>(robot2lengths[i]) << endl;
-        if(std::get<3>(robot2lengths[i]) == 0)
+        if(std::get<3>(robot2lengths[i]) == 0.0)
         {
             robot2lengths.erase(robot2lengths.begin() + i);
         }
+        cout << "robot2legnths[" << i << "] : "<< std::get<3>(robot2lengths[i]) << endl;
     }
     robot2lengths.shrink_to_fit();
     for(int i=0; i<robot2lengths.size(); i++)
@@ -387,7 +391,7 @@ void server_planning::OptimalTarget(void)
         }
     }
     for_sort.shrink_to_fit();
-        for(int i=0; i<for_sort.size();i++ )
+    for(int i=0; i<for_sort.size();i++ )
     {
         cout << "before : " << std::get<2>(for_sort[i]) << endl;
     }
