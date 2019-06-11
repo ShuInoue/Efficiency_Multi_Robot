@@ -14,6 +14,19 @@ find_package(catkin REQUIRED COMPONENTS
   std_msgs
   nav_msgs
   geometry_msgs
+  exploration
+  kobuki_msgs
+  sensor_msgs
+  visualization_msgs
+  exploration_msgs
+  tf
+  costmap_2d
+  navfn
+  voronoi_planner
+  move_base_msgs
+  actionlib
+  pcl_ros
+  actionlib_msgs
 )
 
 ## System dependencies are found with CMake's conventions
@@ -208,5 +221,7 @@ add_executable(server_planning src/server_planning.cpp)
 target_link_libraries(server_planning ${catkin_LIBRARIES})
 add_executable(costmap_publisher src/costmap_publisher.cpp)
 target_link_libraries(costmap_publisher ${catkin_LIBRARIES})
+add_executable(check_time_and_area src/check_time_and_area.cpp)
+target_link_libraries(check_time_and_area ${catkin_LIBRARIES})
 #add_executable(Dijkstra src/Dijkstra.cpp)
 #target_link_libraries(Dijkstra ${catkin_LIBRARIES}) 

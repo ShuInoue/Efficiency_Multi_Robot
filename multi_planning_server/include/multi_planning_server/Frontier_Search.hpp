@@ -7,6 +7,7 @@
 #include <visualization_msgs/Marker.h>
 #include <vector>
 #include <iostream>
+#include <exploration/frontier_search.hpp>
 
 using std::cout;
 using std::endl;
@@ -94,6 +95,7 @@ class Frontier_Search
 			//subff = ff.subscribe("/robot2/move_base/local_costmap/costmap", 1, &Frontier_Search::FSinput, this); //購読先がコストマップ
     		pub0 = fp.advertise<geometry_msgs::PoseArray>("/Frontier_Target", 1);
 			vis_pub = vis.advertise<visualization_msgs::Marker>("/vis_marker/Frontier", 1);
+			input = false;
 			std::cout << "search_len :" << search_len << std::endl;
 			std::cout << "robot_diameter:" << robot_diameter << std::endl;
 			std::cout << "pre_fronum:" << pre_fronum << std::endl;
@@ -101,6 +103,7 @@ class Frontier_Search
 			std::cout << "start_k:" << start_k << std::endl;
 			std::cout << "end_k:" << end_k << std::endl;
 			std::cout << "search_width:" << search_width << std::endl;
+
 		};
         ~Frontier_Search();
         void FSinput(const nav_msgs::OccupancyGrid::ConstPtr& mmsg);//マップの更新を監視

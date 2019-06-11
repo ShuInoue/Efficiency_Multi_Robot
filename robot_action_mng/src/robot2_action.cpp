@@ -63,9 +63,9 @@ void robot2_action::setGoalMarker(const double x,const double y, const std::stri
     marker.scale.y = 0.1;
     marker.scale.z = 0.1;
 
-	marker.color.r = 0.0f;
+	marker.color.r = 1.0f;
     marker.color.g = 0.0f;
-    marker.color.b = 1.0f;
+    marker.color.b = 0.0f;
     marker.color.a = 1.0;
 
 	robot2GoalPub.publish(marker);
@@ -86,7 +86,7 @@ void robot2_action::moveToGoal(double goalX,double goalY,std::string mapFrame,st
 	//define a client for to send goal requests to the move_base server through a SimpleActionClient
 
 	//actionlib::SimpleActionClient<move_base_msgs::MoveBaseAction> ac("robot1/move_base", true);
-	actionlib::SimpleActionClient<move_base_msgs::MoveBaseAction> ac(movebaseNode, true);
+	static actionlib::SimpleActionClient<move_base_msgs::MoveBaseAction> ac(movebaseNode, true);
 
 	//wait for the action server to come up//5.0秒まで待つ
 	while(!ac.waitForServer(ros::Duration(5.0)) && ros::ok()){
@@ -137,20 +137,32 @@ void robot2_action::moveToGoal(double goalX,double goalY,std::string mapFrame,st
 	if(ac.getState() == actionlib::SimpleClientGoalState::SUCCEEDED){
 		std::cout << "＊＊＊＊＊＊＊＊＊＊目標座標に到着＊＊＊＊＊＊＊＊＊＊" << std::endl;
 		arrive_flag2.data = 1;
-		robot2_pub.publish(arrive_flag2);
-		robot2_test_pub.publish(goalpose);
+		for(int i=0;i<10;i++)
+		{
+			robot2_pub.publish(arrive_flag2);
+			robot2_test_pub.publish(goalpose);
+			sleep(1);
+		}
 	}
 	else if(ac.getState() == actionlib::SimpleClientGoalState::ABORTED || goalstate == 4){
 		std::cout << "＊＊＊＊＊＊＊＊＊＊目標座標へのパス生成不可＊＊＊＊＊＊＊＊＊＊" << std::endl;
 		arrive_flag2.data = 2;
-		robot2_pub.publish(arrive_flag2);
-		robot2_test_pub.publish(goalpose);
+		for(int i=0;i<10;i++)
+		{
+			robot2_pub.publish(arrive_flag2);
+			robot2_test_pub.publish(goalpose);
+			sleep(1);
+		}
 	}
 	else{
 		std::cout << "＊＊＊＊＊＊＊＊＊＊目標座標への移動不可＊＊＊＊＊＊＊＊＊＊" << std::endl;
 		arrive_flag2.data = 3;
-		robot2_pub.publish(arrive_flag2);
-		robot2_test_pub.publish(goalpose);
+		for(int i=0;i<10;i++)
+		{
+			robot2_pub.publish(arrive_flag2);
+			robot2_test_pub.publish(goalpose);
+			sleep(1);
+		}
 		//return res.result;
 	}
 }
