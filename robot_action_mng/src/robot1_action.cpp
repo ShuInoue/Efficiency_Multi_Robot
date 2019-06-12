@@ -143,20 +143,34 @@ void robot1_action::moveToGoal(double goalX,double goalY,std::string mapFrame,st
 	if(ac.getState() == actionlib::SimpleClientGoalState::SUCCEEDED){
 		std::cout << "＊＊＊＊＊＊＊＊＊＊目標座標に到着＊＊＊＊＊＊＊＊＊＊" << std::endl;
 		arrive_flag1.data = 1;
-		robot1_pub.publish(arrive_flag1);
-		robot1_test_pub.publish(goalpose);
+		for(int i=0;i<10;i++)
+		{
+			robot1_pub.publish(arrive_flag1);
+			robot1_test_pub.publish(goalpose);
+			sleep(1);
+		}
 	}
 	else if(ac.getState() == actionlib::SimpleClientGoalState::ABORTED || goalstate == 4){
 		std::cout << "＊＊＊＊＊＊＊＊＊＊目標座標へのパス生成不可＊＊＊＊＊＊＊＊＊＊" << std::endl;
 		arrive_flag1.data = 2;
-		robot1_pub.publish(arrive_flag1);
-		robot1_test_pub.publish(goalpose);
+		for(int i=0;i<10;i++)
+		{
+			robot1_pub.publish(arrive_flag1);
+			robot1_test_pub.publish(goalpose);
+			sleep(1);
+		}
+
 	}
 	else{
 		std::cout << "＊＊＊＊＊＊＊＊＊＊目標座標への移動不可＊＊＊＊＊＊＊＊＊＊" << std::endl;
 		arrive_flag1.data = 3;
-		robot1_pub.publish(arrive_flag1);
-		robot1_test_pub.publish(goalpose);
+		for(int i=0;i<10;i++)
+		{
+			robot1_pub.publish(arrive_flag1);
+			robot1_test_pub.publish(goalpose);
+			sleep(1);
+		}
+
 		//return res.result;
 	}
 }

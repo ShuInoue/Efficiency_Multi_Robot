@@ -89,7 +89,6 @@ int main(int argc, char **argv)
         ros::spinOnce();
     }
     */
-   
    cout << "---------------------【SERVER_PLANINNG START】-------------------" << endl;
     while((!SP.odom_queue_flag || !SP.r1_voronoi_map_update) && ros::ok())
     {
@@ -131,7 +130,21 @@ int main(int argc, char **argv)
             if(SP.r1_voronoi_map_update && SP.r2_voronoi_map_update)
             {
                 cout << "r1 and r2 voronoi_map_update" << endl;
+
                 SP.Extraction_Target();
+                if(SP.Extraction_Target_r1.size() == 0 || SP.Extraction_Target_r2.size() == 0)
+                {
+                    static int counter;
+                    if(counter <= 10)
+                    {
+                        goto RERUN_FRONTIER;
+                    }
+                    else
+                    {
+                        std::cout << "Extracted error." << std::endl;
+                        exit(0);
+                    }
+                }
                 SP.Publish_marker();
                 SP.FT2robots();//取得したフロンティア領域を各ロボットの目的地として配布。
                 if(SP.non_extracted_r1 == true && SP.non_extracted_r2 == true)
@@ -142,7 +155,10 @@ int main(int argc, char **argv)
                         std::cout << "Extracted error." << std::endl;
                         exit(0);
                     }
-                    goto RERUN_FRONTIER;
+                    else
+                    {
+                        goto RERUN_FRONTIER;
+                    }
                 }
                 SP.OptimalTarget();
                 SP.arrive1 = 0;
@@ -158,22 +174,28 @@ int main(int argc, char **argv)
                         SP.arrive2_queue.callOne();
                         sleep(0.1);
                     }
-                    cout << "arrive1" << SP.arrive1 << endl;
-                    cout << "arrive2" << SP.arrive2 << endl;
+                    cout << "arrive1 : " << SP.arrive1 << endl;
+                    cout << "arrive2 : " << SP.arrive2 << endl;
                     if(SP.arrive1 == 1 || SP.arrive2 == 1)
                     {
                         cout << "1 or 1" << endl;
-                        break;
+                        goto OUT_MOVE_TO_TARGET;
                     }
                     else if(SP.arrive1 == 2 || SP.arrive2 == 2)//目標へのパス生成不可
                     {
                         cout << "2 or 2" << endl;
-                        SP.update_target(false);
+                        if(SP.update_target(false) == 1)
+                        {
+                            goto OUT_MOVE_TO_TARGET;
+                        }
                     }
                     else if(SP.arrive1 == 3 || SP.arrive2 == 3)//目標への移動不可
                     {
                         cout << "3 or 3" << endl;
-                        SP.update_target(false);
+                        if(SP.update_target(false) == 1)
+                        {
+                            goto OUT_MOVE_TO_TARGET;
+                        }
                     }
                     else
                     {
@@ -181,12 +203,12 @@ int main(int argc, char **argv)
                         cout << "SP.arrive1:" << SP.arrive1 << endl;
                         cout << "SP.arrive2:" << SP.arrive2 << endl;
                     }
-                    
                     SP.arrive1 = 0;
                     SP.arrive2 = 0;
                     cout << "cant_find_final_target_flag loop end" << endl;
                 }
                 cout << "voronoi update flags initialize" << endl;
+                OUT_MOVE_TO_TARGET:
                 SP.r1_voronoi_map_update = false;
                 SP.r2_voronoi_map_update = false;
                 SP.cant_find_final_target_flag = false;
@@ -233,9 +255,7 @@ int main(int argc, char **argv)
         cout << "r1_voronoi_map_update:" << SP.r1_voronoi_map_update << endl;
         cout << "r2_voronoi_map_update:" << SP.r2_voronoi_map_update << endl;
         SP.SP_Memory_release();
-        cout << "test" << endl;
         SP.Clear_Vector();
-        cout << "test" << endl;
         SP.Clear_Num();
 
         cout << "main loop ended" << endl;
