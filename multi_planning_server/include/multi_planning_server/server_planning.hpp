@@ -131,6 +131,7 @@ class server_planning
     int update_target(bool reset);//現在設定されている目的地が到達不可能などの理由で行けなかった場合に、別の目的地を設定するために配列の中を順番に繰り上げて目的地を排出する関数
     void target_sort(std::vector<std::tuple<int, int, float>>);//vectorに格納されている目的地と座標の情報を合計の長さ順にソートする関数。
     void cluster_sub_CB(const geometry_msgs::PoseArray::ConstPtr& msg);//clusterの重心座標を購読した時のコールバック関数
+    void vector_eraser(std::vector<std::tuple<int,float,float,float>> &lengths);
 
 
     ros::Subscriber path_sub1;
@@ -346,35 +347,17 @@ void server_planning::OptimalTarget(void)
     std::string robot1header("/robot1/map");
     std::string robot2header("/robot2/map");
 
-    for(int i=0; i<robot1lengths.size(); i++)
-    {
-        if(std::get<3>(robot1lengths[i]) == 0.0)
-        {
-            robot1lengths.erase(robot1lengths.begin() + i);
-            cout << "erased" << endl;
-        }
-        else
-        {
-            cout << "robot1legnths[" << i << "] : "<< std::get<3>(robot1lengths[i]) << endl;
-        }
-    }
+    vector_eraser(robot1lengths);
     robot1lengths.shrink_to_fit();
     for(int i=0; i<robot1lengths.size(); i++)
     {
-        cout << "robot1lengths : " << std::get<3>(robot1lengths[i]) << endl;
+        cout << "robot1lengths : " << std::get<1>(robot1lengths[i]) << endl;
     }
-    for(int i=0; i<robot2lengths.size(); i++)
-    {
-        if(std::get<3>(robot2lengths[i]) == 0.0)
-        {
-            robot2lengths.erase(robot2lengths.begin() + i);
-        }
-        cout << "robot2legnths[" << i << "] : "<< std::get<3>(robot2lengths[i]) << endl;
-    }
+    vector_eraser(robot2lengths);
     robot2lengths.shrink_to_fit();
     for(int i=0; i<robot2lengths.size(); i++)
     {
-        cout << "robot2lengths : " << std::get<3>(robot2lengths[i]) << endl;
+        cout << "robot2lengths : " << std::get<1>(robot2lengths[i]) << endl;
     }
     for_sort.clear();
     for_sort.resize(robot1lengths.size()*robot2lengths.size());
@@ -1087,5 +1070,19 @@ void server_planning::cluster_sub_CB(const geometry_msgs::PoseArray::ConstPtr &m
     }
 }
 
-
+void server_planning::vector_eraser(std::vector<std::tuple<int,float,float,float>> &lengths)
+{
+    std::vector<std::tuple<int,float,float,float>>::iterator itr = lengths.begin();
+    while(itr != lengths.end())
+    {
+        if(std::get<1>(*itr) == 0)
+        {
+            itr = lengths.erase(itr);
+        }
+        else
+        {
+            ++itr;
+        }
+    }
+}
 #endif
