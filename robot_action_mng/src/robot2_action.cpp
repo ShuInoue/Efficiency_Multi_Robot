@@ -9,7 +9,7 @@ robot2_action::robot2_action()
 	robot2_odom_sub = robot2_odom_sub_nh.subscribe("/robot2/odom",1,&robot2_action::escape_robot_stack,this);
 	robot2_pub = robot2_pub_nh.advertise<std_msgs::Int8>("/arrive_flag2", 1);
 	robot2_test_pub = robot2_test_pub_nh.advertise<geometry_msgs::PoseStamped>("/robot2/move_base_simple/goal",1);
-	
+
 	robot2GoalPub = robot2GoalNh.advertise<visualization_msgs::Marker>("/robot2/action_goal",1);
 }
 robot2_action::~robot2_action(){}
@@ -36,8 +36,8 @@ void robot2_action::escape_robot_stack(const nav_msgs::Odometry::ConstPtr &odom)
 			goalstate = actionlib::SimpleClientGoalState::ABORTED;
 			check_robot_stack = true;
 		}
-	}	
-} 
+	}
+}
 
 void robot2_action::setGoalMarker(const double x,const double y, const std::string frameId)
 {

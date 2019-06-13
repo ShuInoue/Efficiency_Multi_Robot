@@ -68,12 +68,6 @@ class server_planning
     //初期にロボットのvorrnoi_gridを生成するために目的地として与える点。
     float robot_front_point;
 
-    //拡張したvoronoi_mapとロボットのローカルのvoronoi_mapを一致させるためにずらす調整用の変数。
-    float robot1_init_x;
-    float robot1_init_y;
-    float robot2_init_x;
-    float robot2_init_y;
-
     //frontierを中心とした近くのvorgridを探索する用。
     float search_length;
     int search_length_cell;
@@ -129,7 +123,7 @@ class server_planning
     void arrive1_flag(const std_msgs::Int8::ConstPtr &msg);//robot1が目的地に到着した際にトピックにその情報を流す用の関数
     void arrive2_flag(const std_msgs::Int8::ConstPtr &msg);//robot2が目的地に到着した際にトピックにその情報を流す用の関数
     int update_target(bool reset);//現在設定されている目的地が到達不可能などの理由で行けなかった場合に、別の目的地を設定するために配列の中を順番に繰り上げて目的地を排出する関数
-    void target_sort(std::vector<std::tuple<int, int, float>>);//vectorに格納されている目的地と座標の情報を合計の長さ順にソートする関数。
+    void target_sort(std::vector<std::tuple<int, int, float>> &for_sort);//vectorに格納されている目的地と座標の情報を合計の長さ順にソートする関数。
     void cluster_sub_CB(const geometry_msgs::PoseArray::ConstPtr& msg);//clusterの重心座標を購読した時のコールバック関数
     void vector_eraser(std::vector<std::tuple<int,float,float,float>> &lengths);
 
@@ -198,6 +192,12 @@ class server_planning
     bool non_extracted_r1;
     bool non_extracted_r2;
 
+    //拡張したvoronoi_mapとロボットのローカルのvoronoi_mapを一致させるためにずらす調整用の変数。
+    float robot1_init_x;
+    float robot1_init_y;
+    float robot2_init_x;
+    float robot2_init_y;
+
     //その他
     bool isinput;
     bool turn_fin;
@@ -256,10 +256,10 @@ receive_robot_path_wait_time(2)
     arrive2_sub = arrive2_nh.subscribe("/arrive_flag2", 1, &server_planning::arrive2_flag, this);
     cluster_sub = sub_cluster_nh.subscribe("/multi_planning_server/goal_pose_array",1,&server_planning::cluster_sub_CB,this);
 
-    get_param_nh.getParam("/robot1_init_x",robot1_init_x);
-    get_param_nh.getParam("/robot1_init_y",robot1_init_y);
-    get_param_nh.getParam("/robot2_init_x",robot2_init_x);
-    get_param_nh.getParam("/robot2_init_y",robot2_init_y);
+    get_param_nh.getParam("/robot1/map_merge/init_pose_x",robot1_init_x);
+    get_param_nh.getParam("/robot1/map_merge/init_pose_y",robot1_init_y);
+    get_param_nh.getParam("/robot2/map_merge/init_pose_x",robot2_init_x);
+    get_param_nh.getParam("/robot2/map_merge/init_pose_y",robot2_init_y);
     stop_pose.pose.position.x = 0.0;
     stop_pose.pose.position.y = 0.0;
 }
@@ -349,19 +349,10 @@ void server_planning::OptimalTarget(void)
 
     vector_eraser(robot1lengths);
     robot1lengths.shrink_to_fit();
-    for(int i=0; i<robot1lengths.size(); i++)
-    {
-        cout << "robot1lengths : " << std::get<1>(robot1lengths[i]) << endl;
-    }
     vector_eraser(robot2lengths);
     robot2lengths.shrink_to_fit();
-    for(int i=0; i<robot2lengths.size(); i++)
-    {
-        cout << "robot2lengths : " << std::get<1>(robot2lengths[i]) << endl;
-    }
     for_sort.clear();
     for_sort.resize(robot1lengths.size()*robot2lengths.size());
-
     for(int i=0; i<robot1lengths.size(); i++)
     {
         for(int j=0; j<robot2lengths.size(); j++)
@@ -374,15 +365,8 @@ void server_planning::OptimalTarget(void)
         }
     }
     for_sort.shrink_to_fit();
-    for(int i=0; i<for_sort.size();i++ )
-    {
-        cout << "before : " << std::get<2>(for_sort[i]) << endl;
-    }
     target_sort(for_sort);
     for(int i=0; i<for_sort.size();i++ )
-    {
-        cout << "after : " << std::get<2>(for_sort[i]) << endl;
-    }
     sleep(10);
     final_target1.pose.position.x = std::get<2>(robot1lengths[std::get<0>(for_sort[0])]);
     final_target1.pose.position.y = std::get<3>(robot1lengths[std::get<0>(for_sort[0])]);
@@ -392,7 +376,7 @@ void server_planning::OptimalTarget(void)
     final_target2.pose.position.y = std::get<3>(robot2lengths[std::get<1>(for_sort[0])]);
     final_target2.header.frame_id = robot2header;
     final_target2.pose.orientation.w = 1.0;
-    check_avoid_target = sqrt(pow(final_target1.pose.position.x - (final_target2.pose.position.x + 3.0), 2) + pow(final_target1.pose.position.y - (final_target2.pose.position.y), 2));
+    check_avoid_target = sqrt(pow(final_target1.pose.position.x - (final_target2.pose.position.x + robot2_init_x), 2) + pow(final_target1.pose.position.y - (final_target2.pose.position.y + robot2_init_y), 2));
     if(check_avoid_target >= avoid_target && ((final_target1.pose.position.x != 0.0 && final_target1.pose.position.y != 0.0) || (final_target2.pose.position.x != 0.0 && final_target2.pose.position.y != 0.0)))
     {
         robot1_final_target_pub.publish(final_target1);
@@ -733,8 +717,8 @@ void server_planning::FT2robots(void)
         {
             robot2TARGET[i].header.frame_id = robot2header;
             robot2TARGET[i].header.seq = i;
-            robot2TARGET[i].pose.position.x = Extraction_Target_r2[i].pose.position.x - 3.0;
-            robot2TARGET[i].pose.position.y = Extraction_Target_r2[i].pose.position.y;
+            robot2TARGET[i].pose.position.x = Extraction_Target_r2[i].pose.position.x - robot2_init_x;
+            robot2TARGET[i].pose.position.y = Extraction_Target_r2[i].pose.position.y - robot2_init_y;
             target2robot2.publish(robot2TARGET[i]);
             //robot2_final_target_pub.publish(robot2TARGET[i]);
             while(!robot2_path_update_flag && ros::ok())
@@ -1015,7 +999,7 @@ int server_planning::update_target(bool reset)
         return 0;
     }
 
-    check_avoid_target = sqrt(pow(final_target1_update.pose.position.x - (final_target2_update.pose.position.x + 3.0), 2) + pow(final_target1_update.pose.position.y - (final_target2_update.pose.position.y), 2));
+    check_avoid_target = sqrt(pow(final_target1_update.pose.position.x - (final_target2_update.pose.position.x + robot2_init_x), 2) + pow(final_target1_update.pose.position.y - (final_target2_update.pose.position.y + robot2_init_y), 2));
     if(check_avoid_target >= avoid_target && ((final_target1_update.pose.position.x != 0.0 && final_target1_update.pose.position.y != 0.0) || (final_target2_update.pose.position.x != 0.0 && final_target2_update.pose.position.y != 0.0)))
     {
         robot1_final_target_pub.publish(final_target1_update);
@@ -1027,7 +1011,7 @@ int server_planning::update_target(bool reset)
         return 0;
     }
 }
-void server_planning::target_sort(std::vector<std::tuple<int, int, float>> for_sort)
+void server_planning::target_sort(std::vector<std::tuple<int, int, float>> &for_sort)
 {
     bool isEnd = false;
     while(!isEnd)
