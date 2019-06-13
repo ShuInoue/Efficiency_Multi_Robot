@@ -20,7 +20,9 @@ int main(int argc, char **argv)
     ros::Publisher timing_pub;
     timing_pub = timing_nh.advertise<std_msgs::Int8>("/timing_check",1);
 
+
     server_planning SP;
+
 
     /*
    //ロボットの個数をパラメータサーバーから取得
@@ -130,13 +132,15 @@ int main(int argc, char **argv)
             if(SP.r1_voronoi_map_update && SP.r2_voronoi_map_update)
             {
                 cout << "r1 and r2 voronoi_map_update" << endl;
-
                 SP.Extraction_Target();
-                if(SP.Extraction_Target_r1.size() == 0 || SP.Extraction_Target_r2.size() == 0)
+                cout << "SP.Extraction_Target_r1.size() : " << SP.Extraction_Target_r1.size() << endl;
+                cout << "SP.Extraction_Target_r2.size() : " << SP.Extraction_Target_r2.size() << endl;
+                if(SP.Extraction_Target_r1.size() == 0 && SP.Extraction_Target_r2.size() == 0)
                 {
                     static int counter;
                     if(counter <= 10)
                     {
+                        std::cout << "RERUN FRONTIER" << std::endl;
                         goto RERUN_FRONTIER;
                     }
                     else

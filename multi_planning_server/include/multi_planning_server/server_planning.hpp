@@ -68,12 +68,6 @@ class server_planning
     //初期にロボットのvorrnoi_gridを生成するために目的地として与える点。
     float robot_front_point;
 
-    //拡張したvoronoi_mapとロボットのローカルのvoronoi_mapを一致させるためにずらす調整用の変数。
-    float robot1_init_x;
-    float robot1_init_y;
-    float robot2_init_x;
-    float robot2_init_y;
-
     //frontierを中心とした近くのvorgridを探索する用。
     float search_length;
     int search_length_cell;
@@ -198,6 +192,12 @@ class server_planning
     bool non_extracted_r1;
     bool non_extracted_r2;
 
+    //拡張したvoronoi_mapとロボットのローカルのvoronoi_mapを一致させるためにずらす調整用の変数。
+    float robot1_init_x;
+    float robot1_init_y;
+    float robot2_init_x;
+    float robot2_init_y;
+
     //その他
     bool isinput;
     bool turn_fin;
@@ -256,10 +256,10 @@ receive_robot_path_wait_time(2)
     arrive2_sub = arrive2_nh.subscribe("/arrive_flag2", 1, &server_planning::arrive2_flag, this);
     cluster_sub = sub_cluster_nh.subscribe("/multi_planning_server/goal_pose_array",1,&server_planning::cluster_sub_CB,this);
 
-    get_param_nh.getParam("/robot1_init_x",robot1_init_x);
-    get_param_nh.getParam("/robot1_init_y",robot1_init_y);
-    get_param_nh.getParam("/robot2_init_x",robot2_init_x);
-    get_param_nh.getParam("/robot2_init_y",robot2_init_y);
+    get_param_nh.getParam("/robot1/map_merge/init_pose_x",robot1_init_x);
+    get_param_nh.getParam("/robot1/map_merge/init_pose_y",robot1_init_y);
+    get_param_nh.getParam("/robot2/map_merge/init_pose_x",robot2_init_x);
+    get_param_nh.getParam("/robot2/map_merge/init_pose_y",robot2_init_y);
     stop_pose.pose.position.x = 0.0;
     stop_pose.pose.position.y = 0.0;
 }
