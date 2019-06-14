@@ -14,6 +14,7 @@
 #include<visualization_msgs/Marker.h>
 #include<sstream>
 #include<string>
+#include<iomanip>
 
 using std::cout;
 using std::endl;
@@ -29,12 +30,12 @@ int robot_num;//ロボットの個数、台数。
 int fro_num;//フロンティア領域の個数。
 int given_robot_num;//launchの引数として与えられたロボットの台数。
 nav_msgs::OccupancyGrid map_data;//大元のmapトピックのマップ情報
-uint32_t map_width;
-uint32_t map_height;
-uint32_t r1_map_width;
-uint32_t r1_map_height;
-uint32_t r2_map_width;
-uint32_t r2_map_height;
+uint32_t map_width;//マージマップの幅
+uint32_t map_height;//マージマップの高さ
+uint32_t r1_map_width;//costmap_to_voronoiが作って配布したボロノイ図のマップ幅
+uint32_t r1_map_height;//costmap_to_voronoiが作って配布したボロノイ図のマップ高さ
+uint32_t r2_map_width;//costmap_to_voronoiが作って配布したボロノイ図のマップ幅
+uint32_t r2_map_height;//costmap_to_voronoiが作って配布したボロノイ図のマップ高さ
 int **r1_Voronoi_grid_array;
 int **r2_Voronoi_grid_array;
 int **r1_enhanced_Voronoi_grid_array;
@@ -463,22 +464,20 @@ void server_planning::Extraction_Target(void)
     pre_frox.resize(TARGET.size());
     pre_froy.resize(TARGET.size());
     Extracted_sum = 0;
-
+    //発見した目的地の座標を離散化する（メートル表記の座標からマス目表記の座標に直す）
     for(int i=0; i<fro_num; i++)
     {
         pre_frox[i] = (TARGET[i].pose.position.x-map_origin.position.x)/map_resolution;
         pre_froy[i] = (TARGET[i].pose.position.y-map_origin.position.y)/map_resolution;
     }
 
+    //マップの端っこに座標があったら探索窓がマップの端を超えないように探査窓の一辺の長さを変更する
     int k;
     for(k=0;k<fro_num;k++)
     {
-		//std::cout << "pre_frox[k]:" << pre_frox[k] << std::endl;
 		if(pre_frox[k]-half_sq < 0)
         {
-			//std::cout << "half_leftx:" << half_leftx << std::endl;
 			half_leftx = pre_frox[k];
-			//std::cout << "half_leftx:" << half_leftx << std::endl;
 		}
 		else
         {
@@ -508,6 +507,8 @@ void server_planning::Extraction_Target(void)
         {
 			half_bottomy = half_sq;
 		}
+
+        //検出されたフロンティア座標を中心に窓を作り、その窓内に拡張ボロノイ図に登録されているボロノイ線があればそれを追加
 		r1_frontier_sum = 0;
         r2_frontier_sum = 0;
 		for(int i=(pre_froy[k]-half_topy);i<(pre_froy[k]+half_bottomy+1);i++)
@@ -533,6 +534,8 @@ void server_planning::Extraction_Target(void)
 			r2_enhanced_Voronoi_grid_array[pre_frox[k]][pre_froy[k]] = 1;
 		}
 	}
+
+    //拡張
     for(int j=0; j < map_height; j++)
     {
         for(int i=0; i < map_width; i++)
@@ -549,6 +552,7 @@ void server_planning::Extraction_Target(void)
             }
         }
     }
+    cout << "Extraction_Target_r1  :" << Extraction_Target_r1.size() << endl;
 
     for(int j=0; j < map_height; j++)
     {
@@ -566,6 +570,7 @@ void server_planning::Extraction_Target(void)
             }
         }
     }
+    cout << "Extraction_Target_r2  :" << Extraction_Target_r2.size() << endl;
     Extracted_sum = Extraction_Target_r1.size() + Extraction_Target_r2.size();
     if(Extraction_Target_r1.size() == 0 || Extraction_Target_r2.size() == 0)
     {
@@ -810,13 +815,13 @@ void server_planning::enhance_voronoi_map(void)
     cout << "   [enhance_voronoi_map]----------------------------------------" << endl;
     nav_msgs::OccupancyGrid test_map1;
     nav_msgs::OccupancyGrid test_map2;
-    test_map1.header.frame_id = "/server/map";
+    test_map1.header.frame_id = "/robot1/map";
     test_map1.header.stamp = ros::Time::now();
     test_map1.info.resolution = map_resolution;
     test_map1.info.height = map_height;
     test_map1.info.width = map_width;
     test_map1.info.origin = map_origin;
-    test_map2.header.frame_id = "/server/map";
+    test_map2.header.frame_id = "/robot2/map";
     test_map2.header.stamp = ros::Time::now();
     test_map2.info.resolution = map_resolution;
     test_map2.info.height = map_height;
@@ -837,6 +842,10 @@ void server_planning::enhance_voronoi_map(void)
             r1_enhanced_Voronoi_grid_array[x][y] = 0;
         }
     }
+    cout << "map_height : " << map_height << endl;
+    cout << "map_width : " << map_width << endl;
+    cout << "r1_map_height : " << r1_map_height << endl;
+    cout << "r1_map_width : " << r1_map_width << endl;
     //拡張したボロノイ配列にトピックから受け取ったボロノイ図の情報を反映する。
     for(int y = 0; y < r1_map_height; y++)
     {
@@ -868,13 +877,14 @@ void server_planning::enhance_voronoi_map(void)
         }
     }
     //拡張したボロノイ配列にトピックから受け取ったボロノイ図の情報を反映する。
-    int shift_y;
-    shift_y = (int)robot2_init_x*(-1.0);
-    for(int y = 0; y < r2_map_height; y++)
+    int shift_x, shift_y;
+    shift_x = (int)robot2_init_x*(-1.0);
+    shift_y = (int)robot2_init_y*(-1.0);
+    for(int y = shift_y; y < r2_map_height; y++)//shift_y
     {
-        for(int x = shift_y; x < r2_map_width; x++)
+        for(int x = shift_x; x < r2_map_width; x++)//shift_x
         {
-            r2_enhanced_Voronoi_grid_array[x][y] = r2_Voronoi_grid_array[x][y];
+            r2_enhanced_Voronoi_grid_array[x][y] = r2_Voronoi_grid_array[x][y];//ここでマップのコピーができない状態
         }
     }
     for (int y = 0; y < map_height; y++)
