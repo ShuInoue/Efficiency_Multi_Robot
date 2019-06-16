@@ -347,7 +347,7 @@ void server_planning::OptimalTarget(void)
     geometry_msgs::PoseStamped final_target2;
     std::string robot1header("/robot1/map");
     std::string robot2header("/robot2/map");
-
+    cout << "test" << endl;
     vector_eraser(robot1lengths);
     robot1lengths.shrink_to_fit();
     vector_eraser(robot2lengths);
@@ -367,8 +367,6 @@ void server_planning::OptimalTarget(void)
     }
     for_sort.shrink_to_fit();
     target_sort(for_sort);
-    for(int i=0; i<for_sort.size();i++ )
-    sleep(10);
     final_target1.pose.position.x = std::get<2>(robot1lengths[std::get<0>(for_sort[0])]);
     final_target1.pose.position.y = std::get<3>(robot1lengths[std::get<0>(for_sort[0])]);
     final_target1.header.frame_id = robot1header;
