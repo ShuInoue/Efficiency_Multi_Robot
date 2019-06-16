@@ -846,6 +846,8 @@ void server_planning::enhance_voronoi_map(void)
     cout << "map_width : " << map_width << endl;
     cout << "r1_map_height : " << r1_map_height << endl;
     cout << "r1_map_width : " << r1_map_width << endl;
+    cout << "r2_map_height : " << r2_map_height << endl;
+    cout << "r2_map_width : " << r2_map_width << endl;
     //拡張したボロノイ配列にトピックから受け取ったボロノイ図の情報を反映する。
     for(int y = 0; y < r1_map_height; y++)
     {
@@ -880,9 +882,9 @@ void server_planning::enhance_voronoi_map(void)
     int shift_x, shift_y;
     shift_x = (int)robot2_init_x*(-1.0);
     shift_y = (int)robot2_init_y*(-1.0);
-    for(int y = shift_y; y < r2_map_height; y++)//shift_y
+    for(int y = 0; y < r2_map_height; y++)//shift_y
     {
-        for(int x = shift_x; x < r2_map_width; x++)//shift_x
+        for(int x = 0; x < r2_map_width; x++)//shift_x
         {
             r2_enhanced_Voronoi_grid_array[x][y] = r2_Voronoi_grid_array[x][y];//ここでマップのコピーができない状態
         }
