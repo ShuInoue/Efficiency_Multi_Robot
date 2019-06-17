@@ -135,12 +135,13 @@ int main(int argc, char **argv)
                 SP.Extraction_Target();
                 cout << "SP.Extraction_Target_r1.size() : " << SP.Extraction_Target_r1.size() << endl;
                 cout << "SP.Extraction_Target_r2.size() : " << SP.Extraction_Target_r2.size() << endl;
-                if(SP.Extraction_Target_r1.size() == 0 && SP.Extraction_Target_r2.size() == 0)
+                if(SP.Extraction_Target_r1.size() == 0 || SP.Extraction_Target_r2.size() == 0)
                 {
                     static int counter;
                     if(counter <= 10)
                     {
                         std::cout << "RERUN FRONTIER" << std::endl;
+                        SP.Clear_Vector_by_Extraction_Target();
                         goto RERUN_FRONTIER;
                     }
                     else
@@ -161,10 +162,24 @@ int main(int argc, char **argv)
                     }
                     else
                     {
+                        SP.Clear_Vector_by_FT2robots();
                         goto RERUN_FRONTIER;
                     }
                 }
                 SP.OptimalTarget();
+                if(SP.zero_for_sort == true)
+                {
+                    static int zero_for_sort_count = 0;
+                    if(zero_for_sort_count == 10)
+                    {
+                        std::cout << "Extracted error." << std::endl;
+                        exit(0);
+                    }
+                    else
+                    {
+                        goto RERUN_FRONTIER;
+                    }
+                }
                 SP.arrive1 = 0;
                 SP.arrive2 = 0;
                 cout << "cant_find_final_target_flag" << SP.cant_find_final_target_flag << endl;

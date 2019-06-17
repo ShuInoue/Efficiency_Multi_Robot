@@ -120,6 +120,8 @@ class server_planning
     void enhance_voronoi_map(void);//受け取ったボロノイ図は各ロボットごとのマップの大きさしかないのでマージマップとは大きさが異なる。拡張することで比較してもセグフォを吐かないようにする。拡張している部分は情報がないので０で初期化してある。
     void Publish_marker(void);//ボロノイ図を使ってフロンティアから抽出した目的地の情報をrviz上で視覚的に確認できるようにするマーカー。
     void Clear_Vector(void);//vectorの中身を初期化する。
+    void Clear_Vector_by_Extraction_Target(void);//vectorの中身を初期化する。
+    void Clear_Vector_by_FT2robots(void);//vectorの中身を初期化する。
     void Clear_Num(void);//カウント初期化用
     void arrive1_flag(const std_msgs::Int8::ConstPtr &msg);//robot1が目的地に到着した際にトピックにその情報を流す用の関数
     void arrive2_flag(const std_msgs::Int8::ConstPtr &msg);//robot2が目的地に到着した際にトピックにその情報を流す用の関数
@@ -207,6 +209,7 @@ class server_planning
     bool queueF_judge=false;
     bool odom_queue_flag=false;
     bool cant_find_final_target_flag=false;
+    bool zero_for_sort=false;
     int arrive1;
     int arrive2;
     std_msgs::Int8 timing_int;
@@ -352,8 +355,10 @@ void server_planning::OptimalTarget(void)
     robot1lengths.shrink_to_fit();
     vector_eraser(robot2lengths);
     robot2lengths.shrink_to_fit();
+    cout << "test" << endl;
     for_sort.clear();
     for_sort.resize(robot1lengths.size()*robot2lengths.size());
+    cout << "test" << endl;
     for(int i=0; i<robot1lengths.size(); i++)
     {
         for(int j=0; j<robot2lengths.size(); j++)
@@ -365,8 +370,16 @@ void server_planning::OptimalTarget(void)
             }
         }
     }
+    cout << "test" << endl;
+    cout << "for_sort size : " << for_sort.size() << endl;
     for_sort.shrink_to_fit();
+    if(for_sort.size() == 0)
+    {
+        zero_for_sort = true;
+        goto FORCED_TERMINATION;
+    }
     target_sort(for_sort);
+    cout << "test" << endl;
     final_target1.pose.position.x = std::get<2>(robot1lengths[std::get<0>(for_sort[0])]);
     final_target1.pose.position.y = std::get<3>(robot1lengths[std::get<0>(for_sort[0])]);
     final_target1.header.frame_id = robot1header;
@@ -376,6 +389,7 @@ void server_planning::OptimalTarget(void)
     final_target2.header.frame_id = robot2header;
     final_target2.pose.orientation.w = 1.0;
     check_avoid_target = sqrt(pow(final_target1.pose.position.x - (final_target2.pose.position.x + robot2_init_x), 2) + pow(final_target1.pose.position.y - (final_target2.pose.position.y + robot2_init_y), 2));
+    cout << "test" << endl;
     if(check_avoid_target >= avoid_target && ((final_target1.pose.position.x != 0.0 && final_target1.pose.position.y != 0.0) || (final_target2.pose.position.x != 0.0 && final_target2.pose.position.y != 0.0)))
     {
         robot1_final_target_pub.publish(final_target1);
@@ -395,6 +409,7 @@ void server_planning::OptimalTarget(void)
             }
         }
     }
+    FORCED_TERMINATION:
     cout << "[OptimalTarget]----------------------------------------" << endl;
 }
 void server_planning::map_input(const nav_msgs::OccupancyGrid::ConstPtr &msg)
@@ -1079,4 +1094,31 @@ void server_planning::vector_eraser(std::vector<std::tuple<int,float,float,float
         }
     }
 }
+void server_planning::Clear_Vector_by_Extraction_Target(void)
+{
+    SP_Memory_release();
+    pre_frox.clear();
+    pre_frox.shrink_to_fit();
+    pre_froy.clear();
+    pre_froy.shrink_to_fit();
+    Extraction_Target_r1.clear();
+    Extraction_Target_r1.shrink_to_fit();
+    Extraction_Target_r2.clear();
+    Extraction_Target_r2.shrink_to_fit();
+}
+void server_planning::Clear_Vector_by_FT2robots(void)
+{
+    SP_Memory_release();
+    robot1lengths.clear();
+    robot1lengths.shrink_to_fit();
+    robot2lengths.clear();
+    robot2lengths.shrink_to_fit();
+    robot1TARGET.clear();
+    robot1TARGET.shrink_to_fit();
+    robot2TARGET.clear();
+    robot2TARGET.shrink_to_fit();
+    for_sort.clear();
+    for_sort.shrink_to_fit();
+}
+
 #endif
