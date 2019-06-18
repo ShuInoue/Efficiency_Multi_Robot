@@ -129,6 +129,7 @@ class server_planning
     void target_sort(std::vector<std::tuple<int, int, float>> &for_sort);//vectorに格納されている目的地と座標の情報を合計の長さ順にソートする関数。
     void cluster_sub_CB(const geometry_msgs::PoseArray::ConstPtr& msg);//clusterの重心座標を購読した時のコールバック関数
     void vector_eraser(std::vector<std::tuple<int,float,float,float>> &lengths);
+    void  check_a_distance_from_robot_to_target(geometry_msgs::PoseStamped &robot1, geometry_msgs::PoseStamped &robot2, geometry_msgs::PoseStamped robot_path_start_point, int robotNumber);//目的地とパス生成開始時点との距離が近い方にswapする関数
 
 
     ros::Subscriber path_sub1;
@@ -201,6 +202,7 @@ class server_planning
     float robot2_init_x;
     float robot2_init_y;
 
+
     //その他
     bool isinput;
     bool turn_fin;
@@ -218,6 +220,8 @@ class server_planning
     std::string tmp_name;
     geometry_msgs::PoseStamped plot_for_robot1_vorgrid;
     geometry_msgs::PoseStamped plot_for_robot2_vorgrid;
+    geometry_msgs::PoseStamped robot1_path_start_point;
+    geometry_msgs::PoseStamped robot2_path_start_point;
 };
 
 server_planning::server_planning():
@@ -351,6 +355,9 @@ void server_planning::OptimalTarget(void)
     std::string robot1header("/robot1/map");
     std::string robot2header("/robot2/map");
     cout << "test" << endl;
+    cout << "robot1lengths size :" << robot1lengths.size() << endl;
+    cout << "robot2lengths size :" << robot2lengths.size() << endl;
+
     vector_eraser(robot1lengths);
     robot1lengths.shrink_to_fit();
     vector_eraser(robot2lengths);
@@ -389,6 +396,8 @@ void server_planning::OptimalTarget(void)
     final_target2.header.frame_id = robot2header;
     final_target2.pose.orientation.w = 1.0;
     check_avoid_target = sqrt(pow(final_target1.pose.position.x - (final_target2.pose.position.x + robot2_init_x), 2) + pow(final_target1.pose.position.y - (final_target2.pose.position.y + robot2_init_y), 2));
+    check_a_distance_from_robot_to_target(final_target1,final_target2,robot1_path_start_point,1);
+    check_a_distance_from_robot_to_target(final_target1,final_target2,robot2_path_start_point,2);
     cout << "test" << endl;
     if(check_avoid_target >= avoid_target && ((final_target1.pose.position.x != 0.0 && final_target1.pose.position.y != 0.0) || (final_target2.pose.position.x != 0.0 && final_target2.pose.position.y != 0.0)))
     {
@@ -446,9 +455,17 @@ void server_planning::robot1path(const nav_msgs::Path::ConstPtr &path_msg)
     float path_length = 0;
     for(int j=1;j<path_tmp.poses.size();j++)
     {
+        if(j==1)
+        {
+            robot1_path_start_point.pose.position.x = path_tmp.poses[j-1].pose.position.x;
+            robot1_path_start_point.pose.position.y = path_tmp.poses[j-1].pose.position.y;
+        }
+        else{}
         path_length += sqrt(pow(path_tmp.poses[j].pose.position.x-path_tmp.poses[j-1].pose.position.x,2)+pow(path_tmp.poses[j].pose.position.y - path_tmp.poses[j-1].pose.position.y,2));
     }
+    cout << "test" << endl;
     robot1lengths[robot1path_count] = std::make_tuple(robot1path_count, path_length, robot1TARGET[robot1path_count].pose.position.x, robot1TARGET[robot1path_count].pose.position.y);
+    cout << "test" << endl;
     robot1path_count++;
     robot1_path_update_flag = true;
     cout << "   [robot1path]----------------------------------------\n" << endl;
@@ -460,6 +477,12 @@ void server_planning::robot2path(const nav_msgs::Path::ConstPtr &path_msg)
     float path_length = 0;
     for(int j=1;j<path_tmp.poses.size();j++)
     {
+        if(j==1)
+        {
+            robot2_path_start_point.pose.position.x = path_tmp.poses[j-1].pose.position.x;
+            robot2_path_start_point.pose.position.y = path_tmp.poses[j-1].pose.position.y;
+        }
+        else{}
         path_length += sqrt(pow(path_tmp.poses[j].pose.position.x-path_tmp.poses[j-1].pose.position.x,2)+pow(path_tmp.poses[j].pose.position.y - path_tmp.poses[j-1].pose.position.y,2));
     }
     robot2lengths[robot2path_count] = std::make_tuple(robot2path_count, path_length, robot2TARGET[robot2path_count].pose.position.x, robot2TARGET[robot2path_count].pose.position.y);
@@ -855,12 +878,6 @@ void server_planning::enhance_voronoi_map(void)
             r1_enhanced_Voronoi_grid_array[x][y] = 0;
         }
     }
-    cout << "map_height : " << map_height << endl;
-    cout << "map_width : " << map_width << endl;
-    cout << "r1_map_height : " << r1_map_height << endl;
-    cout << "r1_map_width : " << r1_map_width << endl;
-    cout << "r2_map_height : " << r2_map_height << endl;
-    cout << "r2_map_width : " << r2_map_width << endl;
     //拡張したボロノイ配列にトピックから受け取ったボロノイ図の情報を反映する。
     for(int y = 0; y < r1_map_height; y++)
     {
@@ -1025,6 +1042,8 @@ int server_planning::update_target(bool reset)
     }
 
     check_avoid_target = sqrt(pow(final_target1_update.pose.position.x - (final_target2_update.pose.position.x + robot2_init_x), 2) + pow(final_target1_update.pose.position.y - (final_target2_update.pose.position.y + robot2_init_y), 2));
+    check_a_distance_from_robot_to_target(final_target1_update,final_target2_update,robot1_path_start_point,1);
+    check_a_distance_from_robot_to_target(final_target1_update,final_target2_update,robot2_path_start_point,2);
     if(check_avoid_target >= avoid_target && ((final_target1_update.pose.position.x != 0.0 && final_target1_update.pose.position.y != 0.0) || (final_target2_update.pose.position.x != 0.0 && final_target2_update.pose.position.y != 0.0)))
     {
         robot1_final_target_pub.publish(final_target1_update);
@@ -1120,5 +1139,33 @@ void server_planning::Clear_Vector_by_FT2robots(void)
     for_sort.clear();
     for_sort.shrink_to_fit();
 }
-
+void  server_planning::check_a_distance_from_robot_to_target(geometry_msgs::PoseStamped &robot1_target, geometry_msgs::PoseStamped &robot2_target, geometry_msgs::PoseStamped robot_path_start_point,int robotNumber)
+{   
+    float distanceFromStartPointToTarget1,distanceFromStartPointToTarget2;
+    distanceFromStartPointToTarget1 = sqrt(pow(robot1_target.pose.position.x-robot_path_start_point.pose.position.x,2) + pow(robot1_target.pose.position.y-robot_path_start_point.pose.position.y,2));
+    distanceFromStartPointToTarget2 = sqrt(pow(robot2_target.pose.position.x-robot_path_start_point.pose.position.x,2) + pow(robot2_target.pose.position.y-robot_path_start_point.pose.position.y,2));
+    if(robotNumber == 1)
+    {
+        if(distanceFromStartPointToTarget1>distanceFromStartPointToTarget2)
+        {
+            geometry_msgs::PoseStamped tmpTarget;
+            tmpTarget = robot1_target;
+            robot1_target = robot2_target;
+            robot2_target = tmpTarget;
+        }
+        else{}
+    }
+    else if (robotNumber == 2)
+    {
+        if(distanceFromStartPointToTarget2>distanceFromStartPointToTarget1)
+        {
+            geometry_msgs::PoseStamped tmpTarget;
+            tmpTarget = robot1_target;
+            robot1_target = robot2_target;
+            robot2_target = tmpTarget;
+        }
+        else{}
+    }
+    else{}
+}
 #endif

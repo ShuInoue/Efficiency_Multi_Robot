@@ -124,11 +124,13 @@ int main(int argc, char **argv)
             }
             SP.queueF_judge = false;
             std::cout << "queueF.callOne was done." << std::endl;
+            //ここにボロノイ図を作成するためにfinaltargetをおくる必要がある。これがないと一度メインループを抜けるとループに戻らなくなってしまう。
             SP.r1_voronoi_map_queue.callOne(ros::WallDuration(1));//ロボット１から出てきたボロノイ図を蓄えているキューを購読。ボロノイ図用の配列を確保し、そこに情報を反映する。r1_voronoi_map_updateフラグはここで立つ
             SP.r2_voronoi_map_queue.callOne(ros::WallDuration(1));//ロボット２から出てきたボロノイ図を蓄えているキューを購読。ボロノイ図用の配列を確保し、そこに情報を反映する。r2_voronoi_map_updateフラグはここで立つ
             //マップとボロノイ図を比較してボロノイ経路上の目的地を絞り込む
             cout << "r1_voronoi_map_update:" << SP.r1_voronoi_map_update << endl;
             cout << "r2_voronoi_map_update:" << SP.r2_voronoi_map_update << endl;
+            if(SP.r1_voronoi_map_update != false || SP.r2_voronoi_map_update != false)
             if(SP.r1_voronoi_map_update && SP.r2_voronoi_map_update)
             {
                 cout << "r1 and r2 voronoi_map_update" << endl;
