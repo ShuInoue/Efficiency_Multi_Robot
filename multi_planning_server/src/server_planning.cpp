@@ -131,6 +131,18 @@ int main(int argc, char **argv)
             cout << "r1_voronoi_map_update:" << SP.r1_voronoi_map_update << endl;
             cout << "r2_voronoi_map_update:" << SP.r2_voronoi_map_update << endl;
             if(SP.r1_voronoi_map_update != false || SP.r2_voronoi_map_update != false)
+            {
+                if(SP.enableStartedUpdate == true)
+                {
+                    SP.robot1_final_target_pub.publish(SP.final_target1_update_);
+                    SP.robot2_final_target_pub.publish(SP.final_target2_update_);
+                }
+                else
+                {
+                    SP.robot1_final_target_pub.publish(SP.final_target1_);
+                    SP.robot2_final_target_pub.publish(SP.final_target2_);
+                }
+            }
             if(SP.r1_voronoi_map_update && SP.r2_voronoi_map_update)
             {
                 cout << "r1 and r2 voronoi_map_update" << endl;

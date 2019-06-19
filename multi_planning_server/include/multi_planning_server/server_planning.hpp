@@ -202,6 +202,13 @@ class server_planning
     float robot2_init_x;
     float robot2_init_y;
 
+    //現在の目的地の監視用
+    ros::NodeHandle target1_nh;
+    ros::Subscriber target1_sub;
+    ros::CallbackQueue target1_queue;
+    ros::NodeHandle target2_nh;
+    ros::Subscriber target2_sub;
+    ros::CallbackQueue target2_queue;
 
     //その他
     bool isinput;
@@ -212,6 +219,7 @@ class server_planning
     bool odom_queue_flag=false;
     bool cant_find_final_target_flag=false;
     bool zero_for_sort=false;
+    bool enableStartedUpdate;
     int arrive1;
     int arrive2;
     std_msgs::Int8 timing_int;
@@ -222,6 +230,10 @@ class server_planning
     geometry_msgs::PoseStamped plot_for_robot2_vorgrid;
     geometry_msgs::PoseStamped robot1_path_start_point;
     geometry_msgs::PoseStamped robot2_path_start_point;
+    geometry_msgs::PoseStamped final_target1_update_;
+    geometry_msgs::PoseStamped final_target2_update_;
+    geometry_msgs::PoseStamped final_target1_;
+    geometry_msgs::PoseStamped final_target2_;
 };
 
 server_planning::server_planning():
@@ -243,6 +255,8 @@ receive_robot_path_wait_time(2)
     arrive1_nh.setCallbackQueue(&arrive1_queue);
     arrive2_nh.setCallbackQueue(&arrive2_queue);
     sub_cluster_nh.setCallbackQueue(&cluster_queue);
+    target1_nh.setCallbackQueue(&target1_queue);
+    target2_nh.setCallbackQueue(&target2_queue);
 
     //costmap_nh.setCallbackQueue(&costmap_queue);
     vis_pub = vis_nh.advertise<visualization_msgs::Marker>("/vis_marker/Extraction_Target", 1);
@@ -391,10 +405,12 @@ void server_planning::OptimalTarget(void)
     final_target1.pose.position.y = std::get<3>(robot1lengths[std::get<0>(for_sort[0])]);
     final_target1.header.frame_id = robot1header;
     final_target1.pose.orientation.w = 1.0;
+    final_target1_ = final_target1;
     final_target2.pose.position.x = std::get<2>(robot2lengths[std::get<1>(for_sort[0])]);
     final_target2.pose.position.y = std::get<3>(robot2lengths[std::get<1>(for_sort[0])]);
     final_target2.header.frame_id = robot2header;
     final_target2.pose.orientation.w = 1.0;
+    final_target2_ = final_target2;
     check_avoid_target = sqrt(pow(final_target1.pose.position.x - (final_target2.pose.position.x + robot2_init_x), 2) + pow(final_target1.pose.position.y - (final_target2.pose.position.y + robot2_init_y), 2));
     check_a_distance_from_robot_to_target(final_target1,final_target2,robot1_path_start_point,1);
     check_a_distance_from_robot_to_target(final_target1,final_target2,robot2_path_start_point,2);
@@ -1012,6 +1028,7 @@ void server_planning::arrive2_flag(const std_msgs::Int8::ConstPtr &msg)
 }
 int server_planning::update_target(bool reset)
 {
+    enableStartedUpdate == true;
     static int update_target_count = 1;
     float check_avoid_target;
     std::string robot1header("/robot1/map");
@@ -1030,10 +1047,12 @@ int server_planning::update_target(bool reset)
     final_target1_update.pose.position.y = std::get<3>(robot1lengths[std::get<0>(for_sort[update_target_count])]);
     final_target1_update.header.frame_id = robot1header;
     final_target1_update.pose.orientation.w = 1.0;
+    final_target1_update_ = final_target1_update;
     final_target2_update.pose.position.x = std::get<2>(robot2lengths[std::get<1>(for_sort[update_target_count])]);
     final_target2_update.pose.position.y = std::get<3>(robot2lengths[std::get<1>(for_sort[update_target_count])]);
     final_target2_update.header.frame_id = robot2header;
     final_target2_update.pose.orientation.w = 1.0;
+    final_target2_update_ = final_target2_update;
     update_target_count++;
 
     if(final_target1_update.pose.position.x == final_target2_update.pose.position.x && final_target1_update.pose.position.y == final_target2_update.pose.position.y)
@@ -1168,4 +1187,5 @@ void  server_planning::check_a_distance_from_robot_to_target(geometry_msgs::Pose
     }
     else{}
 }
+
 #endif
