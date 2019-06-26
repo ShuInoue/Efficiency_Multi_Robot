@@ -92,23 +92,23 @@ int main(int argc, char **argv)
     }
     */
    cout << "---------------------【SERVER_PLANINNG START】-------------------" << endl;
-    while((!SP.odom_queue_flag || !SP.r1_voronoi_map_update) && ros::ok())
+    while((!SP.odom_queue_flag || !SP.securedR1VoronoiGridArray) && ros::ok())
     {
         SP.robot1_odom_queue.callOne(ros::WallDuration(1));
         SP.r1_voronoi_map_queue.callOne(ros::WallDuration(0.1));
         cout << "odom_queue_flag:" << SP.odom_queue_flag << endl;
-        cout << "r1_voronoi_map_update:" << SP.r1_voronoi_map_update << endl;
+        cout << "securedR1VoronoiGridArray:" << SP.securedR1VoronoiGridArray << endl;
     }
     SP.odom_queue_flag=false;
     cout << "test" << endl;
     sleep(1);
     int count2 = 0;
-    while((!SP.odom_queue_flag || !SP.r2_voronoi_map_update) && ros::ok())
+    while((!SP.odom_queue_flag || !SP.securedR2VoronoiGridArray) && ros::ok())
     {
         SP.robot2_odom_queue.callOne(ros::WallDuration(1));
         SP.r2_voronoi_map_queue.callOne(ros::WallDuration(0.1));
         cout << "odom_queue_flag:" << SP.odom_queue_flag << endl;
-        cout << "r2_voronoi_map_update:" << SP.r2_voronoi_map_update << endl;
+        cout << "securedR2VoronoiGridArray:" << SP.securedR2VoronoiGridArray << endl;
     }
     //メインループ
     while(ros::ok())
@@ -124,12 +124,30 @@ int main(int argc, char **argv)
             }
             SP.queueF_judge = false;
             std::cout << "queueF.callOne was done." << std::endl;
-            SP.r1_voronoi_map_queue.callOne(ros::WallDuration(1));//ロボット１から出てきたボロノイ図を蓄えているキューを購読。ボロノイ図用の配列を確保し、そこに情報を反映する。r1_voronoi_map_updateフラグはここで立つ
-            SP.r2_voronoi_map_queue.callOne(ros::WallDuration(1));//ロボット２から出てきたボロノイ図を蓄えているキューを購読。ボロノイ図用の配列を確保し、そこに情報を反映する。r2_voronoi_map_updateフラグはここで立つ
+            //ここにボロノイ図を作成するためにfinaltargetをおくる必要がある。これがないと一度メインループを抜けるとループに戻らなくなってしまう。
             //マップとボロノイ図を比較してボロノイ経路上の目的地を絞り込む
-            cout << "r1_voronoi_map_update:" << SP.r1_voronoi_map_update << endl;
-            cout << "r2_voronoi_map_update:" << SP.r2_voronoi_map_update << endl;
-            if(SP.r1_voronoi_map_update && SP.r2_voronoi_map_update)
+            cout << "securedR1VoronoiGridArray:" << SP.securedR1VoronoiGridArray << endl;
+            cout << "securedR2VoronoiGridArray:" << SP.securedR2VoronoiGridArray << endl;
+            while((SP.securedR1VoronoiGridArray == false || SP.securedR2VoronoiGridArray == false) && ros::ok())
+            {
+                if(SP.enableStartedUpdate == true)
+                {
+                    SP.robot1_final_target_pub.publish(SP.final_target1_update_);
+                    SP.r1_voronoi_map_queue.callOne(ros::WallDuration(1));//ロボット１から出てきたボロノイ図を蓄えているキューを購読。ボロノイ図用の配列を確保し、そこに情報を反映する。r1_voronoi_map_updateフラグはここで立つ
+                    SP.robot2_final_target_pub.publish(SP.final_target2_update_);
+                    SP.r2_voronoi_map_queue.callOne(ros::WallDuration(1));//ロボット２から出てきたボロノイ図を蓄えているキューを購読。ボロノイ図用の配列を確保し、そこに情報を反映する。r2_voronoi_map_updateフラグはここで立つ
+                    SP.enableStartedUpdate == false;
+                }
+                else
+                {
+                    SP.robot1_final_target_pub.publish(SP.final_target1_);
+                    SP.r1_voronoi_map_queue.callOne(ros::WallDuration(1));//ロボット１から出てきたボロノイ図を蓄えているキューを購読。ボロノイ図用の配列を確保し、そこに情報を反映する。r1_voronoi_map_updateフラグはここで立つ
+                    SP.robot2_final_target_pub.publish(SP.final_target2_);
+                    SP.r2_voronoi_map_queue.callOne(ros::WallDuration(1));//ロボット２から出てきたボロノイ図を蓄えているキューを購読。ボロノイ図用の配列を確保し、そこに情報を反映する。r2_voronoi_map_updateフラグはここで立つ
+                    
+                }
+            }
+            if(SP.securedR1VoronoiGridArray && SP.securedR2VoronoiGridArray)
             {
                 cout << "r1 and r2 voronoi_map_update" << endl;
                 SP.Extraction_Target();
@@ -228,8 +246,8 @@ int main(int argc, char **argv)
                 }
                 cout << "voronoi update flags initialize" << endl;
                 OUT_MOVE_TO_TARGET:
-                SP.r1_voronoi_map_update = false;
-                SP.r2_voronoi_map_update = false;
+                SP.securedR1VoronoiGridArray = false;
+                SP.securedR2VoronoiGridArray = false;
                 SP.cant_find_final_target_flag = false;
                 SP.update_target(true);
                 cout << "if end" << endl;
@@ -271,8 +289,8 @@ int main(int argc, char **argv)
             ROS_ERROR_STREAM("Planning_Server miss map-refresh");
             return 0;
         }
-        cout << "r1_voronoi_map_update:" << SP.r1_voronoi_map_update << endl;
-        cout << "r2_voronoi_map_update:" << SP.r2_voronoi_map_update << endl;
+        cout << "securedR1VoronoiGridArray:" << SP.securedR1VoronoiGridArray << endl;
+        cout << "securedR2VoronoiGridArray:" << SP.securedR2VoronoiGridArray << endl;
         SP.SP_Memory_release();
         SP.Clear_Vector();
         SP.Clear_Num();

@@ -32,6 +32,8 @@ int given_robot_num;//launchの引数として与えられたロボットの台�
 nav_msgs::OccupancyGrid map_data;//大元のmapトピックのマップ情報
 uint32_t map_width;//マージマップの幅
 uint32_t map_height;//マージマップの高さ
+uint32_t costmap_width;//コストマップの幅
+uint32_t costmap_height;//コストマップの高さ
 uint32_t r1_map_width;//costmap_to_voronoiが作って配布したボロノイ図のマップ幅
 uint32_t r1_map_height;//costmap_to_voronoiが作って配布したボロノイ図のマップ高さ
 uint32_t r2_map_width;//costmap_to_voronoiが作って配布したボロノイ図のマップ幅
@@ -192,8 +194,8 @@ class server_planning
 
 
     //ボロノイ抽出で抽出出来たかを判定するフラグ
-    bool non_extracted_r1;
-    bool non_extracted_r2;
+    bool non_extracted_r1=false;
+    bool non_extracted_r2=false;
 
     //拡張したvoronoi_mapとロボットのローカルのvoronoi_mapを一致させるためにずらす調整用の変数。
     float robot1_init_x;
@@ -204,12 +206,20 @@ class server_planning
     //その他
     bool isinput;
     bool turn_fin;
-    bool r1_voronoi_map_update=false;
-    bool r2_voronoi_map_update=false;
     bool queueF_judge=false;
     bool odom_queue_flag=false;
     bool cant_find_final_target_flag=false;
     bool zero_for_sort=false;
+<<<<<<< Updated upstream
+=======
+    bool enableStartedUpdate;
+    bool securedR1EnhancedVoronoiGridArray = false;
+    bool securedR2EnhancedVoronoiGridArray = false;
+    bool securedR1VoronoiGridArray = false;
+    bool securedR2VoronoiGridArray = false;
+    bool securedcostmapArray = false;
+    bool securedFrontierArray = false;
+>>>>>>> Stashed changes
     int arrive1;
     int arrive2;
     std_msgs::Int8 timing_int;
@@ -302,13 +312,23 @@ void server_planning::frontier_target_CB(const geometry_msgs::PoseArray::ConstPt
 }
 void server_planning::frontier_target2map(const std::vector<geometry_msgs::PoseStamped>& Target)
 {
+    int test=0;
     cout << "   [frontier_target2map]----------------------------------------" << endl;
     //Frontier_map用の配列を確保
-    Frontier_array = new int*[map_width];
-    for(int p = 0; p < map_width; p++)
+    if(securedFrontierArray == false)
     {
-        Frontier_array[p] = new int[map_height];
+        Frontier_array = new int*[map_width];
+        for(int p = 0; p < map_width; p++)
+        {
+            Frontier_array[p] = new int[map_height];
+        }
+        securedFrontierArray = true;
     }
+    else
+    {
+        cout << "Unsecured Frontier Array." << endl;
+    }
+    
 
     //Targetの型をfloatからintにする（map配列に座標を変換してその中の値を参照するため）
     frontier_x.resize(Target.size());//Targetはこの関数の引数。常にTARGETが渡されている。
@@ -598,11 +618,22 @@ void server_planning::r1_voronoi_map_CB(const nav_msgs::OccupancyGrid::ConstPtr&
     r1_map_height = voronoi_map_msg ->info.height;
     r1_map_width = voronoi_map_msg ->info.width;
     //ボロノイグリッド格納用の配列を確保
-    r1_Voronoi_grid_array = new int*[voronoi_map_msg->info.width];
-    for(int p = 0; p < voronoi_map_msg->info.width; p++)
+    cout << "securedR1VoronoiGridArray : " << securedR1VoronoiGridArray << endl;
+    if(securedR1VoronoiGridArray == false)
+    {
+        r1_Voronoi_grid_array = new int*[voronoi_map_msg->info.width];
+        for(int p = 0; p < voronoi_map_msg->info.width; p++)
         {
             r1_Voronoi_grid_array[p] = new int [voronoi_map_msg->info.height];
         }
+        securedR1VoronoiGridArray = true;
+        cout << "securedR1VoronoiGridArray : " << securedR1VoronoiGridArray << endl;
+    }
+    else
+    {
+        cout << "Unsecured r1_Voronoi_grid_array" << endl;
+    }
+    cout << "securedR1VoronoiGridArray : " << securedR1VoronoiGridArray << endl;
     //ボロノイグリッドを配列に格納
     for(int j = 0; j < voronoi_map_msg->info.height; j++)
     {
@@ -611,7 +642,6 @@ void server_planning::r1_voronoi_map_CB(const nav_msgs::OccupancyGrid::ConstPtr&
             r1_Voronoi_grid_array[i][j]=voronoi_map_msg->data[voronoi_map_msg->info.width*j+i];
         }
     }
-    r1_voronoi_map_update = true;
     cout << "[r1_voronoi_map_CB]----------------------------------------\n" << endl;
 }
 
@@ -620,11 +650,15 @@ void server_planning::r2_voronoi_map_CB(const nav_msgs::OccupancyGrid::ConstPtr&
     cout << "[r2_voronoi_map_CB]----------------------------------------" << endl;
     r2_map_height = voronoi_map_msg ->info.height;
     r2_map_width = voronoi_map_msg ->info.width;
-    //ボロノイグリッド格納用の配列を確保
-    r2_Voronoi_grid_array = new int*[voronoi_map_msg->info.width];
-    for(int p = 0; p < voronoi_map_msg->info.width; p++)
+    if(securedR2VoronoiGridArray == false)
     {
-        r2_Voronoi_grid_array[p] = new int [voronoi_map_msg->info.height];
+        //ボロノイグリッド格納用の配列を確保
+        r2_Voronoi_grid_array = new int*[voronoi_map_msg->info.width];
+        for(int p = 0; p < voronoi_map_msg->info.width; p++)
+        {
+            r2_Voronoi_grid_array[p] = new int [voronoi_map_msg->info.height];
+        }
+        securedR2VoronoiGridArray = true;
     }
     //ボロノイグリッドを配列に格納
     for(int j = 0; j < voronoi_map_msg->info.height; j++)
@@ -634,14 +668,13 @@ void server_planning::r2_voronoi_map_CB(const nav_msgs::OccupancyGrid::ConstPtr&
             r2_Voronoi_grid_array[i][j]=voronoi_map_msg->data[voronoi_map_msg->info.width*j+i];
         }
     }
-    r2_voronoi_map_update = true;
     cout << "[r2_voronoi_map_CB]----------------------------------------\n" << endl;
 }
 
 void server_planning::SP_Memory_release(void)
 {
     cout << "[Memory_release]----------------------------------------" << endl;
-    if(r1_voronoi_map_update)
+    if(securedR1VoronoiGridArray)
     {
         for(int p = 0; p < r1_map_width; p++)
         {
@@ -653,9 +686,9 @@ void server_planning::SP_Memory_release(void)
             delete[] r1_enhanced_Voronoi_grid_array[p];
         }
         delete[] r1_enhanced_Voronoi_grid_array;
-        r1_voronoi_map_update = false;
+        securedR1VoronoiGridArray = false;
     }
-    if(r2_voronoi_map_update)
+    if(securedR2VoronoiGridArray)
     {
         for(int p = 0; p < r2_map_width; p++)
         {
@@ -666,13 +699,26 @@ void server_planning::SP_Memory_release(void)
         {
             delete[] r2_enhanced_Voronoi_grid_array[p];
         }
-        r2_voronoi_map_update = false;
+        securedR2VoronoiGridArray = false;
     }
-    for(int p = 0; p < map_width; p++)
+    if(securedFrontierArray)
     {
-        delete[] Frontier_array[p];
+        for(int p = 0; p < map_width; p++)
+        {
+            delete[] Frontier_array[p];
+        }
+        delete[] Frontier_array;
+        securedFrontierArray = false;
     }
-    delete[] Frontier_array;
+    if(securedcostmapArray)
+    {
+        for(int p = 0; p < map_width; p++)
+        {
+            delete[] costmap_array[p];
+        }
+        delete[] costmap_array;
+        securedcostmapArray = false;
+    }
     cout << "[Memory_release]----------------------------------------\n" << endl;
 }
 
@@ -726,7 +772,7 @@ void server_planning::FT2robots(void)
     }
     else
     {
-        non_extracted_r1 == true;
+        non_extracted_r1 = true;
     }
     test_count = 0;
     if(Extraction_Target_r2.size() != 0)
@@ -762,7 +808,7 @@ void server_planning::FT2robots(void)
     }
     else
     {
-        non_extracted_r2 == true;
+        non_extracted_r2 = true;
     }
     cout << "[FT2robots end]----------------------------------------\n" << endl;
 }
@@ -770,12 +816,16 @@ void server_planning::FT2robots(void)
 void server_planning::costmap_CB(const nav_msgs::OccupancyGrid::ConstPtr& costmap_msg)
 {
     cout << "***costmap_CB started.***" << endl;
-    //コストマップ格納用の配列を確保
-    costmap_array = new int*[costmap_msg->info.width];
-    for(int p = 0; p < costmap_msg->info.width; p++)
-        {
-            costmap_array[p] = new int [costmap_msg->info.height];
-        }
+    if(securedcostmapArray == false)
+    {
+        //コストマップ格納用の配列を確保
+        costmap_array = new int*[costmap_msg->info.width];
+        for(int p = 0; p < costmap_msg->info.width; p++)
+            {
+                costmap_array[p] = new int [costmap_msg->info.height];
+            }
+            securedcostmapArray == true;
+    }
     //コストマップの情報を配列に格納
     for(int i = 0; i < costmap_msg->info.width; i++)
     {
@@ -841,11 +891,15 @@ void server_planning::enhance_voronoi_map(void)
     test_map2.info.width = map_width;
     test_map2.info.origin = map_origin;
 
-    //Frontierとの比較用に拡張させたボロノイ配列を作成する。
-    r1_enhanced_Voronoi_grid_array = new int*[map_width];
-    for(int p = 0; p < map_width; p++)
+    if(securedR1EnhancedVoronoiGridArray == false)
     {
-        r1_enhanced_Voronoi_grid_array[p] = new int[map_height];
+        //Frontierとの比較用に拡張させたボロノイ配列を作成する。
+        r1_enhanced_Voronoi_grid_array = new int*[map_width];
+        for(int p = 0; p < map_width; p++)
+        {
+            r1_enhanced_Voronoi_grid_array[p] = new int[map_height];
+        }
+        securedR1EnhancedVoronoiGridArray == true;
     }
     //拡張したボロノイ配列を0で初期化する。
     for(int y = 0; y < map_height; y++)
@@ -878,10 +932,13 @@ void server_planning::enhance_voronoi_map(void)
     }
     test_map_pub1.publish(test_map1);
 
-    r2_enhanced_Voronoi_grid_array = new int*[map_width];
-    for(int p = 0; p < map_width; p++)
+    if(securedR2EnhancedVoronoiGridArray == false)
     {
-        r2_enhanced_Voronoi_grid_array[p] = new int[map_height];
+        r2_enhanced_Voronoi_grid_array = new int*[map_width];
+        for(int p = 0; p < map_width; p++)
+        {
+            r2_enhanced_Voronoi_grid_array[p] = new int[map_height];
+        }
     }
     //拡張したボロノイ配列を0で初期化する。
     for(int y = 0; y < map_height; y++)
