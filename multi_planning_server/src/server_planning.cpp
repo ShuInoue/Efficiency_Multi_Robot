@@ -100,7 +100,6 @@ int main(int argc, char **argv)
         cout << "securedR1VoronoiGridArray:" << SP.securedR1VoronoiGridArray << endl;
     }
     SP.odom_queue_flag=false;
-    cout << "test" << endl;
     sleep(1);
     int count2 = 0;
     while((!SP.odom_queue_flag || !SP.securedR2VoronoiGridArray) && ros::ok())
@@ -130,20 +129,20 @@ int main(int argc, char **argv)
             cout << "securedR2VoronoiGridArray:" << SP.securedR2VoronoiGridArray << endl;
             while((SP.securedR1VoronoiGridArray == false || SP.securedR2VoronoiGridArray == false) && ros::ok())
             {
-                if(SP.enableStartedUpdate == true)
+                if(SP.isStartedUpdate == true)
                 {
-                    SP.robot1_final_target_pub.publish(SP.final_target1_update_);
-                    SP.r1_voronoi_map_queue.callOne(ros::WallDuration(1));//ロボット１から出てきたボロノイ図を蓄えているキューを購読。ボロノイ図用の配列を確保し、そこに情報を反映する。r1_voronoi_map_updateフラグはここで立つ
-                    SP.robot2_final_target_pub.publish(SP.final_target2_update_);
-                    SP.r2_voronoi_map_queue.callOne(ros::WallDuration(1));//ロボット２から出てきたボロノイ図を蓄えているキューを購読。ボロノイ図用の配列を確保し、そこに情報を反映する。r2_voronoi_map_updateフラグはここで立つ
-                    SP.enableStartedUpdate == false;
+                    SP.robot1_odom_queue.callOne(ros::WallDuration(1));
+                    SP.r1_voronoi_map_queue.callOne(ros::WallDuration(0.1));//ロボット１から出てきたボロノイ図を蓄えているキューを購読。ボロノイ図用の配列を確保し、そこに情報を反映する。r1_voronoi_map_updateフラグはここで立つ
+                    SP.robot1_odom_queue.callOne(ros::WallDuration(1));
+                    SP.r2_voronoi_map_queue.callOne(ros::WallDuration(0.1));//ロボット２から出てきたボロノイ図を蓄えているキューを購読。ボロノイ図用の配列を確保し、そこに情報を反映する。r2_voronoi_map_updateフラグはここで立つ
+                    SP.isStartedUpdate = false;
                 }
                 else
                 {
-                    SP.robot1_final_target_pub.publish(SP.final_target1_);
-                    SP.r1_voronoi_map_queue.callOne(ros::WallDuration(1));//ロボット１から出てきたボロノイ図を蓄えているキューを購読。ボロノイ図用の配列を確保し、そこに情報を反映する。r1_voronoi_map_updateフラグはここで立つ
-                    SP.robot2_final_target_pub.publish(SP.final_target2_);
-                    SP.r2_voronoi_map_queue.callOne(ros::WallDuration(1));//ロボット２から出てきたボロノイ図を蓄えているキューを購読。ボロノイ図用の配列を確保し、そこに情報を反映する。r2_voronoi_map_updateフラグはここで立つ
+                    SP.robot1_odom_queue.callOne(ros::WallDuration(1));
+                    SP.r1_voronoi_map_queue.callOne(ros::WallDuration(0.1));//ロボット１から出てきたボロノイ図を蓄えているキューを購読。ボロノイ図用の配列を確保し、そこに情報を反映する。r1_voronoi_map_updateフラグはここで立つ
+                    SP.robot1_odom_queue.callOne(ros::WallDuration(1));
+                    SP.r2_voronoi_map_queue.callOne(ros::WallDuration(0.1));//ロボット２から出てきたボロノイ図を蓄えているキューを購読。ボロノイ図用の配列を確保し、そこに情報を反映する。r2_voronoi_map_updateフラグはここで立つ
                     
                 }
             }
