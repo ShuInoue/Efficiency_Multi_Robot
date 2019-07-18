@@ -963,9 +963,11 @@ cout << "securedR1EnhancedVorooniGridArray : " << securedR1EnhancedVoronoiGridAr
     {
         for(int i = 0; r1_enhanced_Voronoi_grid_array[i] != '\0'; i++)
         {
+            cout << "test1"<< endl;
             r1EnhancedVoronoiGridArrayHightCounter++;
             for(int j=0; r1_enhanced_Voronoi_grid_array[i][j] != '\0'; j++)
             {
+                cout << "test2"<< endl;
                 r1EnhancedVoronoiGridArrayWidthCounter++;
             }
         }
