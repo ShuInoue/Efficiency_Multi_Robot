@@ -2,7 +2,6 @@
 
 robot1_action::robot1_action()
 {
-
 	robot1_pub_nh.setCallbackQueue(&robot1_pub_queue);
 	robot1_sub_nh.setCallbackQueue(&robot1_sub_queue);
 	robot1_odom_sub_nh.setCallbackQueue(&robot1_odom_queue);
