@@ -16,9 +16,11 @@ class plan
     //     std::vector<nav_msgs::Path> candidatePaths;
     //     std::vector<nav_msgs::Odometry> currentlocation;
     // };
-    double calcPathFromLocationToTarget(geometry_msgs::PoseStamped Goal, nav_msgs::Odometry Location, nav_msgs::Path path);
+    double getDistance(double x, double y, double x2, double y2);
     // void targetSort();
     // void combinationPath();
+    public:
+    double calcPathFromLocationToTarget(geometry_msgs::PoseStamped Goal, nav_msgs::Odometry Location, nav_msgs::Path path);
 };
 
 #endif

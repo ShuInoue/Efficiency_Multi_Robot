@@ -3,34 +3,28 @@
 using std::cout;
 using std::endl;
 
-double calcPathFromLocationToTarget(geometry_msgs::PoseStamped Goal, nav_msgs::Odometry Location, nav_msgs::Path path)
+double plan::getDistance(double x, double y, double x2, double y2)
+{
+    cout << "data : " << x <<" "<<  y <<" "<<  x2 <<" "<< y2 << endl;
+    double distance=sqrt(pow(x2-x,2)+pow(y2-y,2));
+    return distance;
+}
+double plan::calcPathFromLocationToTarget(geometry_msgs::PoseStamped Goal, nav_msgs::Odometry Location, nav_msgs::Path path)
 {
     cout << "calc start." << endl;
     double pathlength=0.0;
-    double diffx, diffy;
     double locationToFirstPath, lastPathToGoal;
     
-    diffx=path.poses[0].pose.position.x-Location.pose.pose.position.x;
-    diffy=path.poses[0].pose.position.y-Location.pose.pose.position.y;
-    cout << "diffx : " << diffx << endl;
-    cout << "diffy : " << diffy << endl;
-    locationToFirstPath=hypot((double)diffx,(double)diffy);
+    locationToFirstPath=getDistance(Location.pose.pose.position.x,Location.pose.pose.position.y,path.poses[0].pose.position.x,path.poses[0].pose.position.y);
     cout << "locationToFirstPath : " << locationToFirstPath << endl;
     
-    diffx=path.poses[path.poses.size()-1].pose.position.x-Goal.pose.position.x;
-    diffy=path.poses[path.poses.size()-1].pose.position.y-Goal.pose.position.y;
-    cout << "diffx : " << diffx << endl;
-    cout << "diffy : " << diffy << endl;
-    lastPathToGoal=hypot(diffx,diffy);
+    lastPathToGoal=getDistance(path.poses[path.poses.size()-1].pose.position.x,path.poses[path.poses.size()-1].pose.position.y,Goal.pose.position.x,Goal.pose.position.y);
     cout << "lastPathToGoal : " << lastPathToGoal << endl;
+
     cout << "pathposessie : " << path.poses.size() << endl;
     for(int i=0; i<path.poses.size()-1;i++)
     {
-        diffx=path.poses[i+1].pose.position.x - path.poses[i].pose.position.x;
-        diffy=path.poses[i+1].pose.position.y - path.poses[i].pose.position.y;
-        cout << "diffx : " << diffx << endl;
-        cout << "diffy : " << diffy << endl;
-        pathlength += hypot(diffx, diffy);
+        pathlength += getDistance(path.poses[i+1].pose.position.x, path.poses[i+1].pose.position.y, path.poses[i].pose.position.x,path.poses[i].pose.position.y);
         cout << "pathlength" << i << " : " << lastPathToGoal << endl;
     }
     pathlength = pathlength+locationToFirstPath+lastPathToGoal;
@@ -42,6 +36,7 @@ double calcPathFromLocationToTarget(geometry_msgs::PoseStamped Goal, nav_msgs::O
 
 int main(void)
 {
+    plan p;
     int count=0;
     nav_msgs::Path testPath;
     nav_msgs::Odometry testOdom;
@@ -50,15 +45,15 @@ int main(void)
     testOdom.pose.pose.position.x=0;
     testOdom.pose.pose.position.y=0;
 
-    testGoal.pose.position.x=11;
-    testGoal.pose.position.y=11;
+    testGoal.pose.position.x=-11;
+    testGoal.pose.position.y=-11;
     testPath.poses.resize(10);
     for(int i=0;i<10;i++)
     {
-        testPath.poses[i].pose.position.x=i+1;
-        testPath.poses[i].pose.position.y=i+1;
+        testPath.poses[i].pose.position.x=-i-1;
+        testPath.poses[i].pose.position.y=-i-1;
     }
-    cout << "pathlength : " << calcPathFromLocationToTarget(testGoal,testOdom, testPath) << endl;
+    cout << "pathlength : " << p.calcPathFromLocationToTarget(testGoal,testOdom, testPath) << endl;
 
     return 0;
 }
