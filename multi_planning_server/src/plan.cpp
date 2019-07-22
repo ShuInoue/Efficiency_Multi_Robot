@@ -2,10 +2,13 @@
 
 using std::cout;
 using std::endl;
+using std::sort;
+using std::get;
+using std::setw;
 
 double plan::getDistance(double x, double y, double x2, double y2)
 {
-    cout << "data : " << x <<" "<<  y <<" "<<  x2 <<" "<< y2 << endl;
+    // cout << "data : " << x <<" "<<  y <<" "<<  x2 <<" "<< y2 << endl;
     double distance=sqrt(pow(x2-x,2)+pow(y2-y,2));
     return distance;
 }
@@ -31,8 +34,8 @@ double plan::calcPathFromLocationToTarget(geometry_msgs::PoseStamped Goal, nav_m
     cout << "calc end" << endl;
     return pathlength;
 }
-// void targetSort();
 // void combinationPath();
+
 
 int main(void)
 {
@@ -44,7 +47,6 @@ int main(void)
 
     testOdom.pose.pose.position.x=0;
     testOdom.pose.pose.position.y=0;
-
     testGoal.pose.position.x=-11;
     testGoal.pose.position.y=-11;
     testPath.poses.resize(10);
@@ -54,6 +56,38 @@ int main(void)
         testPath.poses[i].pose.position.y=-i-1;
     }
     cout << "pathlength : " << p.calcPathFromLocationToTarget(testGoal,testOdom, testPath) << endl;
+
+    std::vector<robotData> testRobotData;
+    int id=0;
+    std::random_device rnd;
+    double locationx=0.0;
+    double locationy=0.0;
+    cout << setw(15) << "goalx" << setw(15) << "goaly" << setw(15) << "locationx" <<  setw(15) << "locationy" << setw(15) << "Path" << setw(15) << "id" << endl;
+    for(int i=0; i<10; i++)
+    {
+        double rndtergetx,rndtargety;
+        rndtergetx=rnd();
+        rndtargety=rnd();
+        geometry_msgs::PoseStamped tmpgoal;
+        tmpgoal.pose.position.x = rndtergetx;
+        tmpgoal.pose.position.y = rndtargety;
+
+        nav_msgs::Odometry tmplocation;
+        tmplocation.pose.pose.position.x = locationx;
+        tmplocation.pose.pose.position.y = locationy;
+
+        nav_msgs::Path dummyPath;
+        
+        robotData tmprobotdata={tmpgoal,tmplocation,dummyPath,p.getDistance(rndtergetx,rndtargety,locationx,locationy),id++};
+        testRobotData.push_back(tmprobotdata);
+        cout << setw(15) << testRobotData[i].goal.pose.position.x << setw(15) << testRobotData[i].goal.pose.position.y << setw(15) << testRobotData[i].location.pose.pose.position.x <<  setw(15) << testRobotData[i].location.pose.pose.position.y << setw(15) << testRobotData[i].pathLength << setw(15) << testRobotData[i].memberID << endl;
+    }
+    std::sort(testRobotData.begin(),testRobotData.end());
+    cout << "------------------------------------------------------------------------------------------------------" << endl;
+    for(int i=0; i<10; i++)
+        {
+        cout << setw(15) << testRobotData[i].goal.pose.position.x << setw(15) << testRobotData[i].goal.pose.position.y << setw(15) << testRobotData[i].location.pose.pose.position.x <<  setw(15) << testRobotData[i].location.pose.pose.position.y << setw(15) << testRobotData[i].pathLength << setw(15) << testRobotData[i].memberID << endl;
+    }
 
     return 0;
 }
