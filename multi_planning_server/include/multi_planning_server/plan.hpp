@@ -27,10 +27,14 @@ struct robotData
 };
 class plan
 {
-    // void combinationPath();
+    int numberOfRobots;
+    int indexes;
     public:
+    plan();
     double calcPathFromLocationToTarget(geometry_msgs::PoseStamped Goal, nav_msgs::Odometry Location, nav_msgs::Path path);
     double getDistance(double x, double y, double x2, double y2);
+    void recursive_comb(int *indexes, int s, int rest, std::function<void(int *)> f);
+    void foreach_comb(int n, int k, std::function<void(int *)> f);
 };
 
 #endif
