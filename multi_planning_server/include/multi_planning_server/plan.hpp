@@ -25,16 +25,26 @@ struct robotData
         return  pathLength < another.pathLength;
     }
 };
+struct combinatedPaths
+{
+    double combinatedPathLength;
+    std::vector<int> chosenID;
+        bool operator<(const combinatedPaths &another) const
+    {
+        return  combinatedPathLength < another.combinatedPathLength;
+    }
+};
+typedef struct combinatedPaths combinatedPaths_t;
 class plan
 {
     int numberOfRobots;
     int indexes;
     public:
     plan();
+    void robotDataSetter(std::vector<robotData>& testRobotData);
     double calcPathFromLocationToTarget(geometry_msgs::PoseStamped Goal, nav_msgs::Odometry Location, nav_msgs::Path path);
     double getDistance(double x, double y, double x2, double y2);
-    void recursive_comb(int *indexes, int s, int rest, std::function<void(int *)> f);
-    void foreach_comb(int n, int k, std::function<void(int *)> f);
+    std::vector<combinatedPaths_t> combinatedPaths(std::vector<robotData> robot1data, std::vector<robotData> robot2data);
 };
 
 #endif

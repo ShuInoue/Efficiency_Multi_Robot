@@ -40,31 +40,46 @@ double plan::calcPathFromLocationToTarget(geometry_msgs::PoseStamped Goal, nav_m
     cout << "calc end" << endl;
     return pathlength;
 }
-void plan::recursive_comb(int *indexes, int s, int rest, std::function<void(int *)> f)
+
+std::vector<combinatedPaths_t> plan::combinatedPaths(std::vector<robotData> robot1data, std::vector<robotData> robot2data)
 {
-    if(rest == 0)
+    int count=0;
+    for(int i=0;i<robot1data.size();i++)
     {
-        f(indexes);
+        ++count;
+        robot1data[i].memberID=count;
+        robot2data[i].memberID=count;
     }
-    else
+
+    std::vector<combinatedPaths_t> combinatedPath;
+
+    for(int i=0;i<robot1data.size();i++)
     {
-        if(s<0) return ;
-        recursive_comb(indexes, s-1, rest, f);
-        indexes[rest - 1]=s;
-        recursive_comb(indexes,s-1,rest-1,f);
+        for(int j=0;j<robot2data.size();j++)
+        {
+            combinatedPaths_t tmp;
+            tmp.combinatedPathLength = robot1data[i].pathLength + robot2data[j].pathLength;
+            tmp.chosenID.push_back(robot1data[i].memberID);
+            tmp.chosenID.push_back(robot2data[j].memberID);
+            combinatedPath.push_back(tmp);
+        }
     }
+
+    for(int i=0;i<combinatedPath.size();i++)
+    {
+        cout << setw(15) << combinatedPath[i].combinatedPathLength << setw(5) << combinatedPath[i].chosenID[0] << setw(5) << combinatedPath[i].chosenID[1] << endl;
+    }
+    sort(combinatedPath.begin(),combinatedPath.end());
+    cout << "---------------------------------------------------------------------------------" << endl;
+    for(int i=0;i<combinatedPath.size();i++)
+    {
+        cout << setw(15) << combinatedPath[i].combinatedPathLength << setw(5) << combinatedPath[i].chosenID[0] << setw(5) << combinatedPath[i].chosenID[1] << endl;
+    }
+    return combinatedPath;
 }
 
-void plan::foreach_comb(int n, int k, std::function<void(int *)> f)
+void plan::robotDataSetter(std::vector<robotData>& testRobotData)
 {
-    int indexes[k];
-    recursive_comb(indexes, n-1, k, f);
-}
-
-int main(int argc, char **argv)
-{
-    ros::init(argc, argv, "plan");
-    plan p;
     int count=0;
     nav_msgs::Path testPath;
     nav_msgs::Odometry testOdom;
@@ -80,15 +95,14 @@ int main(int argc, char **argv)
         testPath.poses[i].pose.position.x=-i-1;
         testPath.poses[i].pose.position.y=-i-1;
     }
-    cout << "pathlength : " << p.calcPathFromLocationToTarget(testGoal,testOdom, testPath) << endl;
+    cout << "pathlength : " << calcPathFromLocationToTarget(testGoal,testOdom, testPath) << endl;
 
-    std::vector<robotData> testRobotData;
-    int id=0;
+    int id=1;
     std::random_device rnd;
     double locationx=0.0;
     double locationy=0.0;
     cout << setw(15) << "goalx" << setw(15) << "goaly" << setw(15) << "locationx" <<  setw(15) << "locationy" << setw(15) << "Path" << setw(15) << "id" << endl;
-    for(int i=0; i<10; i++)
+    for(int i=0; i<3; i++)
     {
         double rndtergetx,rndtargety;
         rndtergetx=rnd();
@@ -102,22 +116,22 @@ int main(int argc, char **argv)
         tmplocation.pose.pose.position.y = locationy;
 
         nav_msgs::Path dummyPath;
-        
-        robotData tmprobotdata={tmpgoal,tmplocation,dummyPath,p.getDistance(rndtergetx,rndtargety,locationx,locationy),id++};
+
+        robotData tmprobotdata={tmpgoal,tmplocation,dummyPath,getDistance(rndtergetx,rndtargety,locationx,locationy),id++};
         testRobotData.push_back(tmprobotdata);
         cout << setw(15) << testRobotData[i].goal.pose.position.x << setw(15) << testRobotData[i].goal.pose.position.y << setw(15) << testRobotData[i].location.pose.pose.position.x <<  setw(15) << testRobotData[i].location.pose.pose.position.y << setw(15) << testRobotData[i].pathLength << setw(15) << testRobotData[i].memberID << endl;
     }
-    std::sort(testRobotData.begin(),testRobotData.end());
-    cout << "------------------------------------------------------------------------------------------------------" << endl;
-    for(int i=0; i<10; i++)
-        {
-        cout << setw(15) << testRobotData[i].goal.pose.position.x << setw(15) << testRobotData[i].goal.pose.position.y << setw(15) << testRobotData[i].location.pose.pose.position.x <<  setw(15) << testRobotData[i].location.pose.pose.position.y << setw(15) << testRobotData[i].pathLength << setw(15) << testRobotData[i].memberID << endl;
-    }
 
-    p.foreach_comb(5,4,[](int *indexes)
-    {
-        std::cout << indexes[0] << "," << indexes[1] << "," << indexes[2] << "," << indexes[3] << std::endl;
-    });
+}
 
+int main(int argc, char **argv)
+{
+    ros::init(argc, argv, "plan");
+    plan p;
+    std::vector<robotData> robot1data,robot2data;
+    std::vector<combinatedPaths_t> combinatedPathesResult;
+    p.robotDataSetter(robot1data);
+    p.robotDataSetter(robot2data);
+    combinatedPathesResult=p.combinatedPaths(robot1data,robot2data);
     return 0;
 }
