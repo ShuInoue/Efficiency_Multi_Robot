@@ -11,6 +11,12 @@ plan::plan()
     ros::NodeHandle nh("~");
     nh.getParam("number_of_robots",numberOfRobots);
 }
+robotData plan::transrateFromCombinatedPathsToRobotData(combinatedPaths_t comb, int robotNum)
+{
+    robotData tmpRobotData;
+    tmpRobotData.memberID = comb.chosenID[robotNum-1];
+    return tmpRobotData;
+}
 
 double plan::getDistance(double x, double y, double x2, double y2)
 {
@@ -123,6 +129,25 @@ void plan::robotDataSetter(std::vector<robotData>& testRobotData)
     }
 
 }
+std::vector<geometry_msgs::PoseStamped> plan::robotToTarget(std::vector<combinatedPaths_t> combinatedPathsStruct, std::vector<robotData> robot1, std::vector<robotData> robot2)
+{
+    std::vector<geometry_msgs::PoseStamped> robotToTarget;
+    robotData tmprobot1=transrateFromCombinatedPathsToRobotData(combinatedPathsStruct[0],1);
+    std::vector<robotData>::iterator itr1=std::find(robot1.begin(),robot1.end(),robotData{tmprobot1});
+    if(itr1 != robot1.end())
+    {
+        cout << robot1[itr1-robot1.begin()].goal << endl;
+        robotToTarget.push_back(robot1[itr1-robot1.begin()].goal);
+    }
+    robotData tmprobot2=transrateFromCombinatedPathsToRobotData(combinatedPathsStruct[0],2);
+    std::vector<robotData>::iterator itr2=std::find(robot2.begin(),robot2.end(),robotData{tmprobot2});
+    if(itr2 != robot2.end())
+    {
+        cout << robot2[itr2-robot2.begin()].goal << endl;
+        robotToTarget.push_back(robot2[itr2-robot2.begin()].goal);
+    }
+    return robotToTarget;
+}
 
 int main(int argc, char **argv)
 {
@@ -133,5 +158,7 @@ int main(int argc, char **argv)
     p.robotDataSetter(robot1data);
     p.robotDataSetter(robot2data);
     combinatedPathesResult=p.combinatedPaths(robot1data,robot2data);
+    std::vector<geometry_msgs::PoseStamped> test=p.robotToTarget(combinatedPathesResult,robot1data,robot2data);
+
     return 0;
 }
