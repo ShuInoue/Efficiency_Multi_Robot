@@ -10,7 +10,7 @@ plan::plan()
 {
     ros::NodeHandle nh("~");
     //nh.getParam("number_of_robots",numberOfRobots);
-    numberOfRobots=2;
+    numberOfRobots=3;
 }
 int plan::numberOfRobotGetter(void)
 {
@@ -111,32 +111,44 @@ std::vector<combinatedPaths_t> plan::combinatedPaths(std::vector<std::vector<rob
             robotDatas[i][j].memberID=count;
         }
     }
-
     std::vector<combinatedPaths_t> combinatedPath;
-
-    for(int i=0;i<robotDatas.size();i++)
-    {
-        for(int j=0;j<robotDatas[i].size();j++)
-        {
-            combinatedPaths_t tmp;
-            for(int k=0;k<robotDatas.size();k++)
-            {
-                tmp.combinatedPathLength = robotDatas
-            }
-            tmp.combinatedPathLength = robot1data[i].pathLength + robot2data[j].pathLength;
-            tmp.chosenID.push_back(robot1data[i].memberID);
-            tmp.chosenID.push_back(robot2data[j].memberID);
-            combinatedPath.push_back(tmp);
-        }
-    }
+    // for(int i=0;i<robotDatas.size();i++)
+    // {
+    //     for(int j=0;j<robotDatas[i].size();j++)
+    //     {
+    //         combinatedPaths_t tmp;
+    //         for(int k=0;k<robotDatas.size();k++)
+    //         {
+    //             tmp.combinatedPathLength = robotDatas;
+    //         }
+    //         tmp.combinatedPathLength = robot1data[i].pathLength + robot2data[j].pathLength;
+    //         tmp.chosenID.push_back(robot1data[i].memberID);
+    //         tmp.chosenID.push_back(robot2data[j].memberID);
+    //         combinatedPath.push_back(tmp);
+    //     }
+    // }
     foreach_comb(numberOfFrontiers*numberOfRobots,numberOfRobots,[this](int *indexes)
     {
+        cout << "foreach comb" << endl;
+        static int foreach_combCounter=0;
+        std::vector<int> combinatedElement;
         for(int i=0;i<numberOfRobots;i++)
         {
             cout << indexes[i] << ",";
+            combinatedElement.push_back(indexes[i]);
         }
+        combinatedPatern.push_back(combinatedElement);
         cout << endl;
     });
+    cout << "before cout combinatedpattern" << endl;
+    for(int i=0; i<combinatedPatern.size();i++)
+    {
+        for(int j=0;j<combinatedPatern[i].size();j++)
+        {
+            cout << combinatedPatern[i][j] << ",";
+        }
+        cout << endl;
+    }
     for(int i=0;i<combinatedPath.size();i++)
     {
         cout << setw(15) << combinatedPath[i].combinatedPathLength << setw(5) << combinatedPath[i].chosenID[0] << setw(5) << combinatedPath[i].chosenID[1] << endl;
@@ -202,7 +214,7 @@ int main(int argc, char **argv)
         robotDatas.push_back(tmpRobotData);
     }
     cout << "robotDatas size : " <<robotDatas.size() << endl;
-    combinatedPathesResult=p.combinatedPaths(robotDatas[0],robotDatas[1]);
+    combinatedPathesResult=p.combinatedPaths(robotDatas);
     std::vector<geometry_msgs::PoseStamped> test=p.robotToTarget(combinatedPathesResult,robotDatas[0],robotDatas[1]);
 
 

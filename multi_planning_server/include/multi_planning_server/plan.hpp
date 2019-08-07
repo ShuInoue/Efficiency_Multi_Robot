@@ -45,7 +45,8 @@ class plan
 {
     int numberOfRobots;
     int numberOfFrontiers;
-    int indexes;
+    int *indexes;
+    std::vector<std::vector<int>> combinatedPatern;
     double getDistance(double x, double y, double x2, double y2);
     robotData transrateFromCombinatedPathsToRobotData(combinatedPaths_t comb, int robotNum);
     void recursive_comb(int *indexes, int s, int rest, std::function<void(int *)> f);
