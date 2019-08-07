@@ -51,6 +51,7 @@ class plan
     robotData transrateFromCombinatedPathsToRobotData(combinatedPaths_t comb, int robotNum);
     void recursive_comb(int *indexes, int s, int rest, std::function<void(int *)> f);
     void foreach_comb(int n, int k, std::function<void(int *)> f);
+    double pathlengthFoundwithID(std::vector<std::vector<robotData>> &robotDataYouWantToKnowPathlength, std::vector<int> chosenID);
 
     public:
     plan();
@@ -58,7 +59,7 @@ class plan
     void robotDataSetter(std::vector<robotData>& testRobotData);
     double calcPathFromLocationToTarget(geometry_msgs::PoseStamped Goal, nav_msgs::Odometry Location, nav_msgs::Path path);
     std::vector<combinatedPaths_t> combinatedPaths(std::vector<std::vector<robotData>>robotDatas);
-    std::vector<geometry_msgs::PoseStamped> robotToTarget(std::vector<combinatedPaths_t> combinatedPathsStruct, std::vector<robotData> robot1, std::vector<robotData> robot2);
+    std::vector<geometry_msgs::PoseStamped> robotToTarget(std::vector<combinatedPaths_t> combinatedPathsStruct, std::vector<std::vector<robotData>> tmpRobotDatas);
 };
 
 #endif
