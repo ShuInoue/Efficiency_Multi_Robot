@@ -1269,7 +1269,7 @@ void server_planning::Clear_Vector_by_FT2robots(void)
     for_sort.shrink_to_fit();
 }
 void  server_planning::check_a_distance_from_robot_to_target(geometry_msgs::PoseStamped &robot1_target, geometry_msgs::PoseStamped &robot2_target, geometry_msgs::PoseStamped robot_path_start_point,int robotNumber)
-{   
+{
     float distanceFromStartPointToTarget1,distanceFromStartPointToTarget2;
     distanceFromStartPointToTarget1 = sqrt(pow(robot1_target.pose.position.x-robot_path_start_point.pose.position.x,2) + pow(robot1_target.pose.position.y-robot_path_start_point.pose.position.y,2));
     distanceFromStartPointToTarget2 = sqrt(pow(robot2_target.pose.position.x-robot_path_start_point.pose.position.x,2) + pow(robot2_target.pose.position.y-robot_path_start_point.pose.position.y,2));
