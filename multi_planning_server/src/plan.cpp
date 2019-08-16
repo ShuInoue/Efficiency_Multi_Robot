@@ -10,7 +10,7 @@ plan::plan()
 {
     ros::NodeHandle nh("~");
     //nh.getParam("number_of_robots",numberOfRobots);
-    numberOfRobots=4;
+    numberOfRobots=2;
     numberOfFrontiers=5;
 }
 int plan::numberOfRobotGetter(void)
@@ -109,7 +109,7 @@ robotData plan::transrateFromCombinatedPathsToRobotData(combinatedPaths_t comb, 
     tmpRobotData.memberID = comb.chosenID[robotNum-1];
     return tmpRobotData;
 }
-// 各ロボットの各目的地までの距離を組み合わせて合計していく関数（未完成）
+// 各ロボットの各目的地までの距離を組み合わせて合計していく関数
 std::vector<combinatedPaths_t> plan::combinatedPaths(std::vector<std::vector<robotData>> robotDatas)
 {
     for(int i=0;i<robotDatas.size();i++)
@@ -145,6 +145,7 @@ std::vector<combinatedPaths_t> plan::combinatedPaths(std::vector<std::vector<rob
         combinatedPath[i].combinatedPathLength = pathlengthFoundwithID(robotDatas,combinatedPatern[i]);
         cout << "totalPathlength : " << combinatedPath[i].combinatedPathLength << endl;
     }
+    sort(combinatedPath.begin(),combinatedPath.end());
     return combinatedPath;
 }
 // robotData型のインスタンスに組み合わせの合計距離が最小となった時の目的地の情報を格納する関数
@@ -154,7 +155,7 @@ std::vector<geometry_msgs::PoseStamped> plan::robotToTarget(std::vector<combinat
     std::vector<geometry_msgs::PoseStamped> robotToTarget;
     for(int i=0; i<numberOfRobots; i++)
     {
-        robotData tmprobot=transrateFromCombinatedPathsToRobotData(combinatedPathsStruct[i],i+1);
+        robotData tmprobot=transrateFromCombinatedPathsToRobotData(combinatedPathsStruct[0],i+1);
         std::vector<robotData>::iterator itr1=std::find(tmpRobotDatas[i].begin(),tmpRobotDatas[i].end(),robotData{tmprobot});
         if(itr1 != tmpRobotDatas[i].end())
         {
