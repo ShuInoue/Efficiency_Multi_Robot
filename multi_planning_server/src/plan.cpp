@@ -10,7 +10,7 @@ plan::plan()
 {
     ros::NodeHandle nh("~");
     //nh.getParam("number_of_robots",numberOfRobots);
-    numberOfRobots=4;
+    numberOfRobots=2;
     numberOfFrontiers=5;
 }
 int plan::numberOfRobotGetter(void)
@@ -82,7 +82,7 @@ double plan::getDistance(double x, double y, double x2, double y2)
     // cout << "data : " << x <<" "<<  y <<" "<<  x2 <<" "<< y2 << endl;
     double distance=sqrt(pow(x2-x,2)+pow(y2-y,2));
     return distance;
-}
+}   
 //robotdataの二重配列からIDを使って距離を返す関数
 double plan::pathlengthFoundwithID(std::vector<std::vector<robotData>> &robotDataYouWantToKnowPathlength, std::vector<int> chosenID)
 {
@@ -109,7 +109,7 @@ robotData plan::transrateFromCombinatedPathsToRobotData(combinatedPaths_t comb, 
     tmpRobotData.memberID = comb.chosenID[robotNum-1];
     return tmpRobotData;
 }
-// 各ロボットの各目的地までの距離を組み合わせて合計していく関数（未完成）
+// 各ロボットの各目的地までの距離を組み合わせて合計していく関数
 std::vector<combinatedPaths_t> plan::combinatedPaths(std::vector<std::vector<robotData>> robotDatas)
 {
     for(int i=0;i<robotDatas.size();i++)
@@ -145,27 +145,25 @@ std::vector<combinatedPaths_t> plan::combinatedPaths(std::vector<std::vector<rob
         combinatedPath[i].combinatedPathLength = pathlengthFoundwithID(robotDatas,combinatedPatern[i]);
         cout << "totalPathlength : " << combinatedPath[i].combinatedPathLength << endl;
     }
+    sort(combinatedPath.begin(),combinatedPath.end());
     return combinatedPath;
 }
 // robotData型のインスタンスに組み合わせの合計距離が最小となった時の目的地の情報を格納する関数
 std::vector<geometry_msgs::PoseStamped> plan::robotToTarget(std::vector<combinatedPaths_t> combinatedPathsStruct, std::vector<std::vector<robotData>> tmpRobotDatas)
 {
-    // std::vector<geometry_msgs::PoseStamped> robotToTarget;
-    // robotData tmprobot1=transrateFromCombinatedPathsToRobotData(combinatedPathsStruct[0],1);
-    // std::vector<robotData>::iterator itr1=std::find(robot1.begin(),robot1.end(),robotData{tmprobot1});
-    // if(itr1 != robot1.end())
-    // {
-    //     cout << robot1[itr1-robot1.begin()].goal << endl;
-    //     robotToTarget.push_back(robot1[itr1-robot1.begin()].goal);
-    // }
-    // robotData tmprobot2=transrateFromCombinatedPathsToRobotData(combinatedPathsStruct[0],2);
-    // std::vector<robotData>::iterator itr2=std::find(robot2.begin(),robot2.end(),robotData{tmprobot2});
-    // if(itr2 != robot2.end())
-    // {
-    //     cout << robot2[itr2-robot2.begin()].goal << endl;
-    //     robotToTarget.push_back(robot2[itr2-robot2.begin()].goal);
-    // }
-    // return robotToTarget;
+
+    std::vector<geometry_msgs::PoseStamped> robotToTarget;
+    for(int i=0; i<numberOfRobots; i++)
+    {
+        robotData tmprobot=transrateFromCombinatedPathsToRobotData(combinatedPathsStruct[0],i+1);
+        std::vector<robotData>::iterator itr1=std::find(tmpRobotDatas[i].begin(),tmpRobotDatas[i].end(),robotData{tmprobot});
+        if(itr1 != tmpRobotDatas[i].end())
+        {
+            cout << tmpRobotDatas[i][itr1-tmpRobotDatas[i].begin()].goal << endl;
+            robotToTarget.push_back(tmpRobotDatas[i][itr1-tmpRobotDatas[i].begin()].goal);
+        }
+    }
+    return robotToTarget;
 }
 void plan::recursive_comb(int *indexes, int s, int rest, std::function<void(int *)> f)
 {
@@ -202,7 +200,5 @@ int main(int argc, char **argv)
     cout << "robotDatas size : " <<robotDatas.size() << endl;
     combinatedPathesResult=p.combinatedPaths(robotDatas);
     std::vector<geometry_msgs::PoseStamped> test=p.robotToTarget(combinatedPathesResult,robotDatas);
-
-
     return 0;
 }
