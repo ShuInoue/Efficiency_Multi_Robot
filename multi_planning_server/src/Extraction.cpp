@@ -10,12 +10,22 @@ Extraction::Extraction()
 
 }
 
+void Extraction::initiarize(void)
+{
+    struct SearchVoronoiWindow SVW={};    
+
+}
+
 void Extraction::extractionTarget(vv mapData)
 {
     cout << "[Extraction_Target]----------------------------------------" << endl;
     int Extracted_sum = 0;
+    int search_length_cell = serach_length/
+    int half_sq = search_length_cell/2.0;
     std::vector<double> pre_frox;
     std::vector<double> pre_froy;
+
+
     //発見した目的地の座標を離散化する（メートル表記の座標からマス目表記の座標に直す）
     for(int i=0; i<frontiersCoordinate.size(); i++)
     {
