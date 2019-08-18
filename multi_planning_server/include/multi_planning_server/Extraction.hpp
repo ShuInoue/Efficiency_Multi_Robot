@@ -11,6 +11,7 @@ struct MapInformation
     int mapHeight;
     int mapResolution;
     geometry_msgs::Pose mapOrigin;
+    std::vector<std::vector<int>> mapData;
 };
 struct SearchVoronoiWindow
 {
@@ -35,6 +36,6 @@ class Extraction
     public:
     void initiarize(void);
     void frontiersCoordinateSetter(void);
-    void extractionTarget(vv mapData);
+    void extractionTarget(void);
 
 };

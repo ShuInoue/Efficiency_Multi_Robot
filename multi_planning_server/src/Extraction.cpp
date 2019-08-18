@@ -22,7 +22,7 @@ void Extraction::initiarize(void)
 
 }
 
-void Extraction::extractionTarget(vv mapData)
+void Extraction::extractionTarget(void)
 {
     cout << "[Extraction_Target]----------------------------------------" << endl;
     int Extracted_sum = 0;
@@ -79,26 +79,13 @@ void Extraction::extractionTarget(vv mapData)
         {
 			for(int j=(previousFrontierX[k]-SVW.halfLeftX);j<(previousFrontierX[k]+SVW.halfRightX+1);j++)
             {
-				r1_frontier_sum+=(-1)*r1_enhanced_Voronoi_grid_array[j][i];
+				frontierSum+=(-1)*MI.mapData[j][i];
 			}
 		}
-		if(r1_frontier_sum>128)
+		if(frontierSum>128)
         {
-			r1_enhanced_Voronoi_grid_array[previousFrontierX[k]][previousFrontierY[k]] = 1;
+			MI.mapData[previousFrontierX[k]][previousFrontierY[k]] = 1;
 		}
-        for(int i=(previousFrontierY[k]-SVW.halfTopY);i<(previousFrontierY[k]+SVW.halfBottomY+1);i++)
-        {
-			for(int j=(previousFrontierX[k]-SVW.halfLeftX);j<(previousFrontierX[k]+SVW.halfRightX+1);j++)
-            {
-				r2_frontier_sum+=(-1)*r2_enhanced_Voronoi_grid_array[j][i];
-			}
-		}
-		if(r2_frontier_sum>128)
-        {
-			r2_enhanced_Voronoi_grid_array[previousFrontierX[k]][previousFrontierY[k]] = 1;
-		}
-	}
-
     cout << "Extraction_Target_r1  :" << Extraction_Target_r1.size() << endl;
 
     cout << "[Extraction_Target]----------------------------------------\n" << endl;
@@ -110,4 +97,12 @@ void Extraction::frontiersCoordinateSetter(geometry_msgs::posearray poseArray)
     {
         frontiersCoordinate.push_back(poseArray.poses[i]);
     }
+}
+
+int main(void)
+{
+    Extraction E;
+    
+    
+    return 0;
 }
