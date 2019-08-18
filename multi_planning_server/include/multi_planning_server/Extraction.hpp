@@ -3,7 +3,7 @@
 #include<geometry_msgs/PoseArray.h>
 #include<geometry_msgs/Pose.h>
 #include<nav_msgs/OccupancyGrid.h>
-
+#include<common_lib.hpp>
 
 struct MapInformation
 {
@@ -12,7 +12,7 @@ struct MapInformation
     int mapResolution;
     geometry_msgs::Pose mapOrigin;
 };
-struct SerchVoronoiWindow
+struct SearchVoronoiWindow
 {
     float serachLength;
     int searchLengthCell;
@@ -29,6 +29,8 @@ class Extraction
     ~Extraction();
     std::vector<geometry_msgs::Pose> frontiersCoordinate;
     nav_msgs::OccupancyGrid recievedMapData;
+    struct MapInformation MI;
+    struct SearchVoronoiWindow SVW;
 
     public:
     void initiarize(void);
