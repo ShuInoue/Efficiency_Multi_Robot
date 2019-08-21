@@ -121,7 +121,7 @@ find_package(catkin REQUIRED COMPONENTS
 catkin_package(
   INCLUDE_DIRS include
 #  LIBRARIES multi_planning_server
-#  CATKIN_DEPENDS roscpp rospy std_msgs
+  CATKIN_DEPENDS roscpp rospy std_msgs
 #  DEPENDS actionlib_msgs
 )
 
@@ -223,5 +223,7 @@ add_executable(costmap_publisher src/costmap_publisher.cpp)
 target_link_libraries(costmap_publisher ${catkin_LIBRARIES})
 add_executable(check_time_and_area src/check_time_and_area.cpp)
 target_link_libraries(check_time_and_area ${catkin_LIBRARIES})
+add_executable(plan src/plan.cpp)
+target_link_libraries(plan ${catkin_LIBRARIES})
 #add_executable(Dijkstra src/Dijkstra.cpp)
 #target_link_libraries(Dijkstra ${catkin_LIBRARIES}) 

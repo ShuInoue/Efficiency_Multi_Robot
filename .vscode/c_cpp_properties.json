@@ -3,7 +3,12 @@
         {
             "name": "Linux",
             "includePath": [
-                "${workspaceFolder}/**"
+                "${workspaceFolder}/**",
+                "/home/ros/catkin_ws/src/multiple_robots_slam/",
+                "/home/ros/catkin_ws/src/Efficiency_Multi_Robot/",
+                "/home/ros/catkin_ws/src/Efficiency_Multi_Robot/multi_planning_server/include",
+                "/usr/include"
+
             ],
             "defines": [],
             "compilerPath": "/usr/bin/gcc",
