@@ -1,4 +1,4 @@
-#include<Extraction.hpp>
+#include<multi_planning_server/Extraction.hpp>
 
 using std::cout;
 using std::endl;
@@ -10,16 +10,10 @@ Extraction::Extraction()
 
 }
 
-void Extraction::initiarize(void)
+void Extraction::initialize(void)
 {
-    
-
-    float initSearchLength = 0.3;
-    float initSearchLengthCell = initSearchLength/MI.mapResolution;
-    float initHalfSquare = initSearchLengthCell/2.0;
-
-    struct SearchVoronoiWindow SVW={};    
-
+    struct MapInformation MI={};
+    struct SearchVoronoiWindow SVW={0.3,SVW.serachLength/MI.mapResolution,SVW.searchLengthCell/2,};
 }
 
 void Extraction::extractionTarget(void)
@@ -86,12 +80,11 @@ void Extraction::extractionTarget(void)
         {
 			MI.mapData[previousFrontierX[k]][previousFrontierY[k]] = 1;
 		}
-    cout << "Extraction_Target_r1  :" << Extraction_Target_r1.size() << endl;
-
+    }
     cout << "[Extraction_Target]----------------------------------------\n" << endl;
 }
 
-void Extraction::frontiersCoordinateSetter(geometry_msgs::posearray poseArray)
+void Extraction::frontiersCoordinateSetter(geometry_msgs::PoseArray poseArray)
 {
     for(int i=0;i<poseArray.poses.size();i++)
     {
@@ -102,7 +95,6 @@ void Extraction::frontiersCoordinateSetter(geometry_msgs::posearray poseArray)
 int main(void)
 {
     Extraction E;
-    
     
     return 0;
 }

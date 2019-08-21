@@ -1,9 +1,12 @@
+#ifndef _EXTRACTION_HPP_
+#define _EXTRACTION_HPP_
+
 #include<iostream>
 #include<vector>
 #include<geometry_msgs/PoseArray.h>
 #include<geometry_msgs/Pose.h>
 #include<nav_msgs/OccupancyGrid.h>
-#include<common_lib.hpp>
+#include<multiple_robots_slam/common_lib.hpp>
 
 struct MapInformation
 {
@@ -34,8 +37,10 @@ class Extraction
     struct SearchVoronoiWindow SVW;
 
     public:
-    void initiarize(void);
-    void frontiersCoordinateSetter(void);
+    void initialize(void);
+    void frontiersCoordinateSetter(geometry_msgs::PoseArray poseArray);
     void extractionTarget(void);
 
 };
+
+#endif

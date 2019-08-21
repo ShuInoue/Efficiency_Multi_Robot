@@ -7,6 +7,8 @@
                 "/home/ros/catkin_ws/src/multiple_robots_slam/",
                 "/home/ros/catkin_ws/src/Efficiency_Multi_Robot/",
                 "/home/ros/catkin_ws/src/Efficiency_Multi_Robot/multi_planning_server/include",
+                "/home/ros/catkin_ws/src/multiple_robots_slam/exploration_libraly/include/exploration_libraly",
+                "/home/ros/catkin_ws/src/multiple_robots_slam/exploration_libraly/include/exploration_libraly/",
                 "/usr/include"
 
             ],
