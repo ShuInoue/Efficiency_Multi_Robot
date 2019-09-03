@@ -7,7 +7,6 @@
 #include <visualization_msgs/Marker.h>
 #include <vector>
 #include <iostream>
-#include <exploration/frontier_search.hpp>
 
 using std::cout;
 using std::endl;

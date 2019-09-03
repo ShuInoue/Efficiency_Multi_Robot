@@ -9,6 +9,10 @@ Extraction::Extraction()
 {
 
 }
+Extraction::~Extraction()
+{
+
+}
 
 void Extraction::initialize(void)
 {

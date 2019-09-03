@@ -188,11 +188,11 @@ include_directories(
 # )
 
 ## Mark cpp header files for installation
-# install(DIRECTORY include/${PROJECT_NAME}/
-#   DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
-#   FILES_MATCHING PATTERN "*.h"
-#   PATTERN ".svn" EXCLUDE
-# )
+install(DIRECTORY include/${PROJECT_NAME}/
+  DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+  FILES_MATCHING PATTERN "*.hpp"
+  PATTERN ".svn" EXCLUDE
+)
 
 ## Mark other files for installation (e.g. launch and bag files, etc.)
 # install(FILES
@@ -227,5 +227,7 @@ add_executable(plan src/plan.cpp)
 target_link_libraries(plan ${catkin_LIBRARIES})
 add_executable(Extraction src/Extraction.cpp)
 target_link_libraries(Extraction ${catkin_LIBRARIES})
+add_executable(voronoi_map src/voronoi_map.cpp)
+target_link_libraries(voronoi_map ${catkin_LIBRARIES})
 #add_executable(Dijkstra src/Dijkstra.cpp)
 #target_link_libraries(Dijkstra ${catkin_LIBRARIES}) 

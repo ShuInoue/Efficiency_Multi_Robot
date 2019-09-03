@@ -6,7 +6,7 @@
 #include<geometry_msgs/PoseArray.h>
 #include<geometry_msgs/Pose.h>
 #include<nav_msgs/OccupancyGrid.h>
-#include<multiple_robots_slam/common_lib.hpp>
+#include<exploration_libraly/struct.hpp>
 
 struct MapInformation
 {
@@ -29,14 +29,14 @@ struct SearchVoronoiWindow
 
 class Extraction
 {
-    Extraction();
-    ~Extraction();
     std::vector<geometry_msgs::Pose> frontiersCoordinate;
     nav_msgs::OccupancyGrid recievedMapData;
     struct MapInformation MI;
     struct SearchVoronoiWindow SVW;
 
     public:
+    Extraction();
+    ~Extraction();
     void initialize(void);
     void frontiersCoordinateSetter(geometry_msgs::PoseArray poseArray);
     void extractionTarget(void);
