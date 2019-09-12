@@ -6,7 +6,7 @@
 #include<geometry_msgs/PoseArray.h>
 #include<geometry_msgs/Pose.h>
 #include<nav_msgs/OccupancyGrid.h>
-#include<exploration_libraly/struct.hpp>
+// #include<multiple_robots_slam/common_lib.hpp>
 
 struct MapInformation
 {

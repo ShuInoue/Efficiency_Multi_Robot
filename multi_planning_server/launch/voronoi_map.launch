@@ -1,0 +1,16 @@
+<launch>
+    <arg name="robot_name" default="robot1"/>
+    <arg name="base_frame_id" default="$(arg robot_name)/base_footprint"/>
+    <arg name="global_frame_id" default="$(arg robot_name)/map"/>
+    <arg name="topic_ns" default="$(arg robot_name)"/>
+
+<group ns="$(arg robot_name)">
+    <node pkg="multi_planning_server" type="voronoi_map" name="voronoi_map" output="screen">
+        <param name="namespace" value="$(arg robot_name)"/>
+        <rosparam file="$(find multi_planning_server)/params/costmap_common_params.yaml" command="load" ns="$(arg topic_ns)"/>
+		<rosparam file="$(find multi_planning_server)/params/global_costmap_params.yaml" command="load" ns="$(arg topic_ns)"/>
+        <param name="$(arg topic_ns)/global_frame" value="$(arg global_frame_id)"/>
+        <param name="$(arg topic_ns)/robot_base_frame" value="$(arg base_frame_id)"/>
+    </node>
+</group>>
+</launch>
