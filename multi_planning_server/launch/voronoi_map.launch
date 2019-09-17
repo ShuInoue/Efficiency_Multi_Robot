@@ -7,10 +7,14 @@
 <group ns="$(arg robot_name)">
     <node pkg="multi_planning_server" type="voronoi_map" name="voronoi_map" output="screen">
         <param name="namespace" value="$(arg robot_name)"/>
-        <rosparam file="$(find multi_planning_server)/params/costmap_common_params.yaml" command="load" ns="$(arg topic_ns)"/>
-		<rosparam file="$(find multi_planning_server)/params/global_costmap_params.yaml" command="load" ns="$(arg topic_ns)"/>
-        <param name="$(arg topic_ns)/global_frame" value="$(arg global_frame_id)"/>
-        <param name="$(arg topic_ns)/robot_base_frame" value="$(arg base_frame_id)"/>
+        <rosparam file="$(find multi_planning_server)/params/costmap_common_params.yaml" command="load" ns="global_costmap"/>
+		<rosparam file="$(find multi_planning_server)/params/global_costmap_params.yaml" command="load" ns="global_costmap"/>
+        <param name="global_frame" value="$(arg global_frame_id)"/>
+        <param name="robot_base_frame" value="$(arg base_frame_id)"/>
+        <!-- <rosparam file="$(find exploration)/param/path_planner_params.yaml" command="load"/> -->
+        <param name="global_costmap/global_frame" value="robot1/map"/>
+        <param name="global_costmap/robot_base_frame" value="robot1/base_footprint"/>
+        <remap from="map" to="map_continuity"/>
     </node>
 </group>>
 </launch>
