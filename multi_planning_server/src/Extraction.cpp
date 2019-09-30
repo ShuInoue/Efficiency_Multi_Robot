@@ -7,7 +7,7 @@ typedef std::vector<std::vector<int>> vv;
 
 Extraction::Extraction()
 {
-
+    
 }
 Extraction::~Extraction()
 {
@@ -30,8 +30,8 @@ void Extraction::extractionTarget(void)
     //発見した目的地の座標を離散化する（メートル表記の座標からマス目表記の座標に直す）
     for(int i=0; i<frontiersCoordinate.size(); i++)
     {
-        previousFrontierX.push_back((frontiersCoordinate[i].position.x-recievedMapData.info.origin.position.x)/MI.mapResolution);
-        previousFrontierY.push_back((frontiersCoordinate[i].position.y-recievedMapData.info.origin.position.y)/MI.mapResolution);
+        previousFrontierX.push_back((frontiersCoordinate[i].x-recievedMapData.info.origin.position.x)/MI.mapResolution);
+        previousFrontierY.push_back((frontiersCoordinate[i].y-recievedMapData.info.origin.position.y)/MI.mapResolution);
     }
 
     //マップの端っこに座標があったら探索窓がマップの端を超えないように探査窓の一辺の長さを変更する
@@ -85,20 +85,37 @@ void Extraction::extractionTarget(void)
 			MI.mapData[previousFrontierX[k]][previousFrontierY[k]] = 1;
 		}
     }
+    for (int i = 0; i < MI.mapData.size(); i++)
+    {
+        for (int j = 0; j < MI.mapData[i].size(); i++)
+        {
+            cout << MI.mapData[i][j] << endl;
+        }
+    }
     cout << "[Extraction_Target]----------------------------------------\n" << endl;
 }
 
-void Extraction::frontiersCoordinateSetter(geometry_msgs::PoseArray poseArray)
+void Extraction::frontiersCoordinateSetter(const exploration_msgs::FrontierArray& poseArray)
 {
-    for(int i=0;i<poseArray.poses.size();i++)
+    for(int i=0;i<poseArray.frontiers.size();i++)
     {
-        frontiersCoordinate.push_back(poseArray.poses[i]);
+        frontiersCoordinate.push_back(poseArray.frontiers[i].point);
     }
 }
 
-int main(void)
+int main(int argc, char** argv)
 {
+    ros::init(argc,argv,"Extraction");
     Extraction E;
+    ExpLib::Struct::subStruct<exploration_msgs::FrontierArray> voronoiGridTopicSub("/robot1/voronoi_map/global_costmap/voronoi_grid",1);
+    while(ros::ok())
+    {
+        voronoiGridTopicSub.q.callOne();
+        E.initialize();
+        E.frontiersCoordinateSetter(voronoiGridTopicSub.data); 
+        E.extractionTarget();
+        sleep(1.0);
+    }
     
     return 0;
 }

@@ -16,12 +16,13 @@ class voronoiMap
     nav_msgs::OccupancyGrid map;
     std::string topicNameSpace_;
     std::string globalFrameId_;
+    
 
     public:
     voronoiMap(std::string initTopicNameSpace_,std::string initGlobalFrameId_);
     ~voronoiMap();
     nav_msgs::OccupancyGrid mapGetter(void);
-    void poseSetter(geometry_msgs::PoseStamped& pose);
+    void poseSetter(std::string poseName, geometry_msgs::PoseStamped& pose);
     void mergeMapCallBack(const nav_msgs::OccupancyGrid::ConstPtr& mergeMap);
     bool createVoronoiMap(geometry_msgs::PoseStamped& start,geometry_msgs::PoseStamped& goal,std::vector<geometry_msgs::PoseStamped>& plan);
 

@@ -21,8 +21,11 @@ void voronoiMap::mergeMapCallBack(const nav_msgs::OccupancyGrid::ConstPtr& merge
     cout << "cb" << endl;
     map = *mergeMap;
     geometry_msgs::PoseStamped startData,goalData;
-    poseSetter(startData);
-    poseSetter(goalData);
+    std::string originalPoseName;
+    originalPoseName  = "start";
+    poseSetter(originalPoseName,startData);
+    originalPoseName = "goal";
+    poseSetter(originalPoseName,goalData);
     std::vector<geometry_msgs::PoseStamped> planData;
     createVoronoiMap(startData,goalData,planData);
 }
@@ -32,7 +35,7 @@ nav_msgs::OccupancyGrid voronoiMap::mapGetter(void)
     return map;
 }
 
-void voronoiMap::poseSetter(geometry_msgs::PoseStamped& pose)
+void voronoiMap::poseSetter(std::string poseName, geometry_msgs::PoseStamped& pose)
 {
     std::cout << "start_pose_set" << std::endl;
     pose.header.frame_id = globalFrameId_;
@@ -43,6 +46,19 @@ void voronoiMap::poseSetter(geometry_msgs::PoseStamped& pose)
     pose.pose.orientation.y=0.0;
     pose.pose.orientation.z=0.0;
     pose.pose.orientation.w=1.0;
+    if(poseName == "start")
+    {
+        pose.pose.position.x = 0.0;
+    }
+    else if(poseName == "goal")
+    {
+        pose.pose.position.x = 1.0;
+    }
+    else
+    {
+        cout << "Cannot set a position." << endl;
+    }
+    
     std::cout << "end start_pose_set" << std::endl;
 
 }
@@ -83,13 +99,13 @@ int main(int argc, char **argv)
     //     pp.createPath(start, goal, path);
     // }
     voronoiMap vm(topicNameSpace,globalFrameId);
-    sub=n.subscribe("/robot1/move_base/global_costmap/costmap",1,&voronoiMap::mergeMapCallBack,&vm);
+    sub=n.subscribe("/robot1/costmap_continuity",1,&voronoiMap::mergeMapCallBack,&vm);
     cout << " etst "<< endl;
     cout << "setting completed." << endl;
     while(ros::ok())
     {
         cout << "main loop." << endl;
-        queue.callOne(ros::WallDuration(1.0));
+        queue.callOne(ros::WallDuration(10.0));
     }
     return 0;
 }

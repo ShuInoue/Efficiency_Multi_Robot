@@ -1,8 +1,13 @@
+<?xml version="1.0"?>
 <launch>
     <arg name="robot_name" default="robot1"/>
     <arg name="base_frame_id" default="$(arg robot_name)/base_footprint"/>
     <arg name="global_frame_id" default="$(arg robot_name)/map"/>
     <arg name="topic_ns" default="$(arg robot_name)"/>
+    <remap from="map" to="$(arg robot_name)/map"/>        
+    <remap from="map_continuity" to="$(arg robot_name)/map_continuity"/>
+    <remap from="costmap_continuity" to="$(arg robot_name)/costmap_continuity"/>
+    <node pkg="exploration_support" type="map_continuity" name="map_continuity"/>
 
 <group ns="$(arg robot_name)">
     <node pkg="multi_planning_server" type="voronoi_map" name="voronoi_map" spawn="true" output="screen">
@@ -14,7 +19,7 @@
         <!-- <rosparam file="$(find exploration)/param/path_planner_params.yaml" command="load"/> -->
         <param name="global_costmap/global_frame" value="robot1/map"/>
         <param name="global_costmap/robot_base_frame" value="robot1/base_footprint"/>
-        <remap from="map" to="map_continuity"/>
+        <!-- <remap from="map" to="map_continuity"/> -->
     </node>
 </group>>
 </launch>
