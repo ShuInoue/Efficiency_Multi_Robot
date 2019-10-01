@@ -7,6 +7,7 @@
 #include <visualization_msgs/Marker.h>
 #include <vector>
 #include <iostream>
+#include <exploration_msgs/FrontierArray.h>
 
 using std::cout;
 using std::endl;
@@ -19,7 +20,7 @@ class Frontier_Search
         ros::NodeHandle fp;
         ros::Subscriber subff;
         ros::Publisher pub0;
-		geometry_msgs::Pose Pose;	
+		exploration_msgs::Frontier Pose;	
 
         //vis用
 		ros::Publisher vis_pub;		
@@ -90,9 +91,10 @@ class Frontier_Search
     	search_width(3)
 		{
 			ff.setCallbackQueue(&queueF);
-    		subff = ff.subscribe("/server/grid_map_merge/merge_map", 1, &Frontier_Search::FSinput, this); //購読先がグローバルマップ
+    		//subff = ff.subscribe("/server/grid_map_merge/merge_map", 1, &Frontier_Search::FSinput, this); //購読先がグローバルマップ
+			subff = ff.subscribe("/robot1/map_continuity", 1, &Frontier_Search::FSinput, this); //購読先がグローバルマップ
 			//subff = ff.subscribe("/robot2/move_base/local_costmap/costmap", 1, &Frontier_Search::FSinput, this); //購読先がコストマップ
-    		pub0 = fp.advertise<geometry_msgs::PoseArray>("/Frontier_Target", 1);
+    		pub0 = fp.advertise<exploration_msgs::FrontierArray>("/Frontier_Target", 1);
 			vis_pub = vis.advertise<visualization_msgs::Marker>("/vis_marker/Frontier", 1);
 			input = false;
 			std::cout << "search_len :" << search_len << std::endl;
@@ -316,29 +318,29 @@ void Frontier_Search::Search_Obstacle(void)
 
 void Frontier_Search::Publish_Data(void)
 {
-	geometry_msgs::PoseArray poseArray;
+	exploration_msgs::FrontierArray poseArray;
 	for(int i=0; i<fro_num; i++)
 	{
-		poseArray.header.stamp = ros::Time::now();
-		poseArray.header.frame_id = "/server/merge_map";
-		Pose.position.x = fro_x[i];
-		Pose.position.y = fro_y[i];
-		Pose.orientation.x = 0.0;
-		Pose.orientation.y = 0.0;
-		Pose.orientation.z = 0.0;
-		Pose.orientation.w = 1.0;
+		//poseArray.header.stamp = ros::Time::now();
+		//poseArray.header.frame_id = "/server/merge_map";
+		Pose.point.x = fro_x[i];
+		Pose.point.y = fro_y[i];
+		//Pose.orientation.x = 0.0;
+		//Pose.orientation.y = 0.0;
+		//Pose.orientation.z = 0.0;
+		//Pose.orientation.w = 1.0;
 		//std::cout << "fro_x:" << Pose.pose.position.x << "fro_y:" << Pose.pose.position.y << std::endl;
-		poseArray.poses.push_back(Pose);
+		poseArray.frontiers.push_back(Pose);
 	}
 	pub0.publish(poseArray);
-	cout << "pose size: " << poseArray.poses.size() << endl;
+	//cout << "pose size: " << poseArray.poses.size() << endl;
 }
 
 void Frontier_Search::Publish_marker(void)
 {
 	visualization_msgs::Marker marker;
 	uint32_t shape = visualization_msgs::Marker::CUBE_LIST;
-	marker.header.frame_id = "/server/merge_map";
+	marker.header.frame_id = "/robot1/map";
 	marker.header.stamp = ros::Time::now();
 	marker.ns = "Frontier";
 	marker.id = 0;

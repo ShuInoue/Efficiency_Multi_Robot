@@ -5,19 +5,31 @@ using std::endl;
 
 typedef std::vector<std::vector<int>> vv;
 
-Extraction::Extraction()
+Extraction::Extraction(nav_msgs::OccupancyGrid recievedMapData, exploration_msgs::FrontierArray recievedFrontierArray)
 {
-    
+    std::vector<int> rowTransMapData;
+    std::vector<std::vector<int>> transMapData;
+    int mapDataCounter;
+    for(int i=0;i<recievedMapData.info.width;i++)
+    {
+        for(int j=0;j<recievedMapData.info.height;j++)
+        {
+            rowTransMapData.push_back(recievedMapData.data[mapDataCounter]);
+            mapDataCounter++;
+        }
+        transMapData.push_back(rowTransMapData);
+    }
+    struct MapInformation MI = {recievedMapData.info.width,
+                                recievedMapData.info.height,
+                                recievedMapData.info.resolution,
+                                recievedMapData.info.origin,
+                                transMapData};
+    struct SearchVoronoiWindow SVW={0.3,SVW.serachLength/MI.mapResolution,SVW.searchLengthCell/2,};
+    frontiersCoordinateSetter(recievedFrontierArray);
 }
 Extraction::~Extraction()
 {
 
-}
-
-void Extraction::initialize(void)
-{
-    struct MapInformation MI={};
-    struct SearchVoronoiWindow SVW={0.3,SVW.serachLength/MI.mapResolution,SVW.searchLengthCell/2,};
 }
 
 void Extraction::extractionTarget(void)
@@ -30,8 +42,8 @@ void Extraction::extractionTarget(void)
     //発見した目的地の座標を離散化する（メートル表記の座標からマス目表記の座標に直す）
     for(int i=0; i<frontiersCoordinate.size(); i++)
     {
-        previousFrontierX.push_back((frontiersCoordinate[i].x-recievedMapData.info.origin.position.x)/MI.mapResolution);
-        previousFrontierY.push_back((frontiersCoordinate[i].y-recievedMapData.info.origin.position.y)/MI.mapResolution);
+        previousFrontierX.push_back((frontiersCoordinate[i].x-MI.mapOrigin.position.x)/MI.mapResolution);
+        previousFrontierY.push_back((frontiersCoordinate[i].y-MI.mapOrigin.position.y)/MI.mapResolution);
     }
 
     //マップの端っこに座標があったら探索窓がマップの端を超えないように探査窓の一辺の長さを変更する
@@ -106,13 +118,13 @@ void Extraction::frontiersCoordinateSetter(const exploration_msgs::FrontierArray
 int main(int argc, char** argv)
 {
     ros::init(argc,argv,"Extraction");
-    Extraction E;
-    ExpLib::Struct::subStruct<exploration_msgs::FrontierArray> voronoiGridTopicSub("/robot1/voronoi_map/global_costmap/voronoi_grid",1);
+    ExpLib::Struct::subStruct<nav_msgs::OccupancyGrid> voronoiGridTopicSub("/robot1/voronoi_map/global_costmap/voronoi_grid",1);
+    ExpLib::Struct::subStruct<exploration_msgs::FrontierArray> frontierCoordinateSub("/Frontier_Target",1);
     while(ros::ok())
     {
         voronoiGridTopicSub.q.callOne();
-        E.initialize();
-        E.frontiersCoordinateSetter(voronoiGridTopicSub.data); 
+        frontierCoordinateSub.q.callOne();
+        Extraction E(voronoiGridTopicSub.data, frontierCoordinateSub.data);
         E.extractionTarget();
         sleep(1.0);
     }

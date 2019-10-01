@@ -11,9 +11,9 @@
 
 struct MapInformation
 {
-    int mapWidth;
-    int mapHeight;
-    int mapResolution;
+    uint32_t mapWidth;
+    uint32_t mapHeight;
+    float mapResolution;
     geometry_msgs::Pose mapOrigin;
     std::vector<std::vector<int>> mapData;
 };
@@ -31,16 +31,14 @@ struct SearchVoronoiWindow
 class Extraction
 {
     std::vector<geometry_msgs::Point> frontiersCoordinate;
-    nav_msgs::OccupancyGrid recievedMapData;
     struct MapInformation MI;
     struct SearchVoronoiWindow SVW;
 
     public:
-    Extraction();
-    ~Extraction();
-    void initialize(void);
-    void frontiersCoordinateSetter(const exploration_msgs::FrontierArray& poseArray);
-    void extractionTarget(void);
+        Extraction(nav_msgs::OccupancyGrid recievedMapData, exploration_msgs::FrontierArray recievedFrontierArray);
+        ~Extraction();
+        void frontiersCoordinateSetter(const exploration_msgs::FrontierArray &poseArray);
+        void extractionTarget(void);
 };
 
 #endif
