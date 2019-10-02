@@ -11,9 +11,9 @@ Extraction::Extraction(nav_msgs::OccupancyGrid recievedMapData, exploration_msgs
     std::vector<int> rowTransMapData;
     std::vector<std::vector<int>> transMapData;
     int mapDataCounter;
-    for(int i=0;i<recievedMapData.info.width;i++)
+    for(int i=0;i<recievedMapData.info.height;i++)
     {
-        for(int j=0;j<recievedMapData.info.height;j++)
+        for(int j=0;j<recievedMapData.info.width;j++)
         {
             rowTransMapData.push_back(recievedMapData.data[mapDataCounter]);
             mapDataCounter++;
@@ -44,6 +44,7 @@ void Extraction::mapInformationSetter(nav_msgs::OccupancyGrid originalMapData, s
     MI.mapOrigin = originalMapData.info.origin;
     MI.mapData = originalTransMapData;
 }
+
 
 void Extraction::extractionTarget(void)
 {
@@ -110,6 +111,20 @@ void Extraction::extractionTarget(void)
 		}
     }
 
+    for(int j=0;j<MI.mapHeight;j++)
+    {
+        for(int i=0;i<MI.mapWidth;i++)
+        {
+            if (MI.mapData[i][j] == 1)
+            {
+                exploration_msgs::Frontier extractedPoint;
+                extractedPoint.point.x = MI.mapResolution * i + MI.mapOrigin.position.x;
+                extractedPoint.point.y = MI.mapResolution * j + MI.mapOrigin.position.y;
+                extractedCoordinates.frontiers.push_back(extractedPoint);
+            }
+        }
+    }
+    cout << "extractionjCoordinates size = " << extractedCoordinates.frontiers.size() << endl;
     cout << "[Extraction_Target]----------------------------------------\n" << endl;
 }
 
@@ -126,15 +141,18 @@ int main(int argc, char** argv)
     ros::init(argc,argv,"Extraction");
     ExpLib::Struct::subStruct<nav_msgs::OccupancyGrid> voronoiGridTopicSub("/robot1/voronoi_map/global_costmap/voronoi_grid",1);
     ExpLib::Struct::subStruct<exploration_msgs::FrontierArray> frontierCoordinateSub("/Frontier_Target",1);
+    ExpLib::Struct::pubStruct<exploration_msgs::FrontierArray> publishData("/extraction_target", 10);
     while(ros::ok())
     {
-        voronoiGridTopicSub.q.callOne(ros::WallDuration(10.0));
-        frontierCoordinateSub.q.callOne(ros::WallDuration(10.0));
+        voronoiGridTopicSub.q.callOne(ros::WallDuration(1.0));
+        frontierCoordinateSub.q.callOne(ros::WallDuration(1.0));
         cout << "resolution : " <<  voronoiGridTopicSub.data.info.resolution << endl;
         cout << "height : " << voronoiGridTopicSub.data.info.height << endl;
         cout << "width : " << voronoiGridTopicSub.data.info.width << endl;
         Extraction E(voronoiGridTopicSub.data, frontierCoordinateSub.data);
         E.extractionTarget();
+        publishData.pub.publish(E.extractedCoordinates);
+
         sleep(1.0);
     }
     

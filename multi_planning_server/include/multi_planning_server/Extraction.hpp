@@ -36,11 +36,12 @@ class Extraction
     struct SearchVoronoiWindow SVW;
 
     public:
+        exploration_msgs::FrontierArray extractedCoordinates;
         Extraction(nav_msgs::OccupancyGrid recievedMapData, exploration_msgs::FrontierArray recievedFrontierArray);
         ~Extraction();
         void frontiersCoordinateSetter(const exploration_msgs::FrontierArray &poseArray);
-        void extractionTarget(void);
         void mapInformationSetter(nav_msgs::OccupancyGrid originalMapData,std::vector<std::vector<int>> originalTransMapData);
+        void extractionTarget(void);
         void searchVoronoiWindowSetter(float windowLength);
 };
 
