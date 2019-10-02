@@ -7,6 +7,7 @@ typedef std::vector<std::vector<int>> vv;
 
 Extraction::Extraction(nav_msgs::OccupancyGrid recievedMapData, exploration_msgs::FrontierArray recievedFrontierArray)
 {
+    cout << "recievedMapData resolution : " << recievedMapData.info.resolution << endl;
     std::vector<int> rowTransMapData;
     std::vector<std::vector<int>> transMapData;
     int mapDataCounter;
@@ -19,17 +20,29 @@ Extraction::Extraction(nav_msgs::OccupancyGrid recievedMapData, exploration_msgs
         }
         transMapData.push_back(rowTransMapData);
     }
-    struct MapInformation MI = {recievedMapData.info.width,
-                                recievedMapData.info.height,
-                                recievedMapData.info.resolution,
-                                recievedMapData.info.origin,
-                                transMapData};
-    struct SearchVoronoiWindow SVW={0.3,SVW.serachLength/MI.mapResolution,SVW.searchLengthCell/2,};
+    mapInformationSetter(recievedMapData,transMapData);
+    searchVoronoiWindowSetter(0.3);
     frontiersCoordinateSetter(recievedFrontierArray);
 }
 Extraction::~Extraction()
 {
 
+}
+
+void Extraction::searchVoronoiWindowSetter(float windowLength)
+{
+    SVW.serachLength = windowLength;
+    SVW.searchLengthCell = SVW.serachLength / MI.mapResolution;
+    SVW.halfSquare = SVW.searchLengthCell / 2;
+}
+
+void Extraction::mapInformationSetter(nav_msgs::OccupancyGrid originalMapData, std::vector<std::vector<int>> originalTransMapData)
+{
+    MI.mapWidth = originalMapData.info.width;
+    MI.mapHeight = originalMapData.info.height;
+    MI.mapResolution = originalMapData.info.resolution;
+    MI.mapOrigin = originalMapData.info.origin;
+    MI.mapData = originalTransMapData;
 }
 
 void Extraction::extractionTarget(void)
@@ -38,12 +51,11 @@ void Extraction::extractionTarget(void)
     int Extracted_sum = 0;
     std::vector<double> previousFrontierX,previousFrontierY;
 
-
     //発見した目的地の座標を離散化する（メートル表記の座標からマス目表記の座標に直す）
     for(int i=0; i<frontiersCoordinate.size(); i++)
     {
         previousFrontierX.push_back((frontiersCoordinate[i].x-MI.mapOrigin.position.x)/MI.mapResolution);
-        previousFrontierY.push_back((frontiersCoordinate[i].y-MI.mapOrigin.position.y)/MI.mapResolution);
+        previousFrontierY.push_back((frontiersCoordinate[i].y - MI.mapOrigin.position.y) / MI.mapResolution);
     }
 
     //マップの端っこに座標があったら探索窓がマップの端を超えないように探査窓の一辺の長さを変更する
@@ -87,9 +99,9 @@ void Extraction::extractionTarget(void)
 		int frontierSum = 0;
 		for(int i=(previousFrontierY[k]-SVW.halfTopY);i<(previousFrontierY[k]+SVW.halfBottomY+1);i++)
         {
-			for(int j=(previousFrontierX[k]-SVW.halfLeftX);j<(previousFrontierX[k]+SVW.halfRightX+1);j++)
+            for(int j=(previousFrontierX[k]-SVW.halfLeftX);j<(previousFrontierX[k]+SVW.halfRightX+1);j++)
             {
-				frontierSum+=(-1)*MI.mapData[j][i];
+                frontierSum+=(-1)*MI.mapData[j][i];
 			}
 		}
 		if(frontierSum>128)
@@ -97,13 +109,7 @@ void Extraction::extractionTarget(void)
 			MI.mapData[previousFrontierX[k]][previousFrontierY[k]] = 1;
 		}
     }
-    for (int i = 0; i < MI.mapData.size(); i++)
-    {
-        for (int j = 0; j < MI.mapData[i].size(); i++)
-        {
-            cout << MI.mapData[i][j] << endl;
-        }
-    }
+
     cout << "[Extraction_Target]----------------------------------------\n" << endl;
 }
 
@@ -122,8 +128,11 @@ int main(int argc, char** argv)
     ExpLib::Struct::subStruct<exploration_msgs::FrontierArray> frontierCoordinateSub("/Frontier_Target",1);
     while(ros::ok())
     {
-        voronoiGridTopicSub.q.callOne();
-        frontierCoordinateSub.q.callOne();
+        voronoiGridTopicSub.q.callOne(ros::WallDuration(10.0));
+        frontierCoordinateSub.q.callOne(ros::WallDuration(10.0));
+        cout << "resolution : " <<  voronoiGridTopicSub.data.info.resolution << endl;
+        cout << "height : " << voronoiGridTopicSub.data.info.height << endl;
+        cout << "width : " << voronoiGridTopicSub.data.info.width << endl;
         Extraction E(voronoiGridTopicSub.data, frontierCoordinateSub.data);
         E.extractionTarget();
         sleep(1.0);

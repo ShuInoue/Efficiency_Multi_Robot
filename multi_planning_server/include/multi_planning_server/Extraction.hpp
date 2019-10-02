@@ -17,6 +17,7 @@ struct MapInformation
     geometry_msgs::Pose mapOrigin;
     std::vector<std::vector<int>> mapData;
 };
+
 struct SearchVoronoiWindow
 {
     float serachLength;
@@ -39,6 +40,8 @@ class Extraction
         ~Extraction();
         void frontiersCoordinateSetter(const exploration_msgs::FrontierArray &poseArray);
         void extractionTarget(void);
+        void mapInformationSetter(nav_msgs::OccupancyGrid originalMapData,std::vector<std::vector<int>> originalTransMapData);
+        void searchVoronoiWindowSetter(float windowLength);
 };
 
 #endif
