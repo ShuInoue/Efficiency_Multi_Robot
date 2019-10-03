@@ -13,6 +13,8 @@
 #include<random>
 #include<iostream>
 #include<functional>
+#include<exploration_msgs/FrontierArray.h>
+#include<exploration_libraly/struct.hpp>
 
 struct robotData
 {
@@ -46,6 +48,8 @@ class plan
     int numberOfRobots;
     int numberOfFrontiers;
     int *indexes;
+    std::vector<geometry_msgs::Point> recievedFrontierCoordinates;
+    nav_msgs::Odometry recievedOdometry;
     std::vector<std::vector<int>> combinatedPatern;
     double getDistance(double x, double y, double x2, double y2);
     robotData transrateFromCombinatedPathsToRobotData(combinatedPaths_t comb, int robotNum);
@@ -53,9 +57,11 @@ class plan
     void foreach_comb(int n, int k, std::function<void(int *)> f);
     double pathlengthFoundwithID(std::vector<std::vector<robotData>> &robotDataYouWantToKnowPathlength, std::vector<int> chosenID);
 
+
     public:
     plan();
     int numberOfRobotGetter(void);
+    void recievedFrontierCoordinatesSetter(const exploration_msgs::FrontierArray& recievedData);
     void robotDataSetter(std::vector<robotData>& testRobotData);
     double calcPathFromLocationToTarget(geometry_msgs::PoseStamped Goal, nav_msgs::Odometry Location, nav_msgs::Path path);
     std::vector<combinatedPaths_t> combinatedPaths(std::vector<std::vector<robotData>>robotDatas);

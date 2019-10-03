@@ -8,6 +8,7 @@ typedef std::vector<std::vector<int>> vv;
 Extraction::Extraction(nav_msgs::OccupancyGrid recievedMapData, exploration_msgs::FrontierArray recievedFrontierArray)
 {
     cout << "recievedMapData resolution : " << recievedMapData.info.resolution << endl;
+    cout << "recievedFrontierArray size : " << recievedFrontierArray.frontiers.size() << endl;
     std::vector<int> rowTransMapData;
     std::vector<std::vector<int>> transMapData;
     int mapDataCounter;

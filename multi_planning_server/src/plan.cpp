@@ -11,7 +11,6 @@ plan::plan()
     ros::NodeHandle nh("~");
     //nh.getParam("number_of_robots",numberOfRobots);
     numberOfRobots=2;
-    numberOfFrontiers=5;
 }
 int plan::numberOfRobotGetter(void)
 {
@@ -21,6 +20,9 @@ int plan::numberOfRobotGetter(void)
 void plan::robotDataSetter(std::vector<robotData>& testRobotData)
 {
     int count=0;
+    int id=0;
+    /*
+    //test data
     nav_msgs::Path testPath;
     nav_msgs::Odometry testOdom;
     geometry_msgs::PoseStamped testGoal;
@@ -36,11 +38,11 @@ void plan::robotDataSetter(std::vector<robotData>& testRobotData)
         testPath.poses[i].pose.position.y=sin(i+1);
     }
 
-    int id=0;
     std::random_device rnd;
     double locationx=0.0;
     double locationy=0.0;
     cout << setw(15) << "goalx" << setw(15) << "goaly" << setw(15) << "locationx" <<  setw(15) << "locationy" << setw(15) << "Path" << setw(15) << "id" << endl;
+    
     for(int i=0; i<numberOfFrontiers; i++)
     {
         double rndtergetx,rndtargety;
@@ -59,6 +61,24 @@ void plan::robotDataSetter(std::vector<robotData>& testRobotData)
         robotData tmprobotdata={tmpgoal,tmplocation,dummyPath,getDistance(rndtergetx,rndtargety,locationx,locationy),++id};
         testRobotData.push_back(tmprobotdata);
         cout << setw(15) << testRobotData[i].goal.pose.position.x << setw(15) << testRobotData[i].goal.pose.position.y << setw(15) << testRobotData[i].location.pose.pose.position.x <<  setw(15) << testRobotData[i].location.pose.pose.position.y << setw(15) << testRobotData[i].pathLength << setw(15) << testRobotData[i].memberID << endl;
+    }
+    */
+    for (int i = 0; i < numberOfFrontiers; i++)
+    {
+        geometry_msgs::PoseStamped tmpgoal;
+        tmpgoal.pose.position.x = recievedFrontierCoordinates[i].x;
+        tmpgoal.pose.position.y = recievedFrontierCoordinates[i].y;
+
+        nav_msgs::Odometry tmplocation;
+        //tmplocation = *recievedOdometry;
+        tmplocation.pose.pose.position.x = recievedOdometry.pose.pose.position.x;
+        tmplocation.pose.pose.position.y = recievedOdometry.pose.pose.position.y;
+
+        nav_msgs::Path Path;
+
+        robotData tmprobotdata = {tmpgoal, tmplocation, Path, getDistance(tmpgoal.pose.position.x, tmpgoal.pose.position.y, tmplocation.pose.pose.position.x, tmplocation.pose.pose.position.y), ++id};
+        testRobotData.push_back(tmprobotdata);
+        cout << setw(15) << testRobotData[i].goal.pose.position.x << setw(15) << testRobotData[i].goal.pose.position.y << setw(15) << testRobotData[i].location.pose.pose.position.x << setw(15) << testRobotData[i].location.pose.pose.position.y << setw(15) << testRobotData[i].pathLength << setw(15) << testRobotData[i].memberID << endl;
     }
 }
 // ロボットの現在位置から目的地までの距離を計算する関数
@@ -149,9 +169,9 @@ std::vector<combinatedPaths_t> plan::combinatedPaths(std::vector<std::vector<rob
     return combinatedPath;
 }
 // robotData型のインスタンスに組み合わせの合計距離が最小となった時の目的地の情報を格納する関数
+// robotToTargetのサイズはロボットの個数に等しく、ロボットの順番が配列順になっている（要検証）
 std::vector<geometry_msgs::PoseStamped> plan::robotToTarget(std::vector<combinatedPaths_t> combinatedPathsStruct, std::vector<std::vector<robotData>> tmpRobotDatas)
 {
-
     std::vector<geometry_msgs::PoseStamped> robotToTarget;
     for(int i=0; i<numberOfRobots; i++)
     {
@@ -184,21 +204,39 @@ void plan::foreach_comb(int n, int k, std::function<void(int *)> f)
     int indexes[k];
     recursive_comb(indexes, n-1, k, f);
 }
+
+void plan::recievedFrontierCoordinatesSetter(const exploration_msgs::FrontierArray &recievedData)
+{
+    for(int i=0;i<recievedData.frontiers.size();i++)
+    {
+        recievedFrontierCoordinates.push_back(recievedData.frontiers[i].point);
+    }
+    numberOfFrontiers = recievedData.frontiers.size();
+}
 // 検査用メイン関数
 int main(int argc, char **argv)
 {
     ros::init(argc, argv, "plan");
     plan p;
-    std::vector<std::vector<robotData>> robotDatas;
-    std::vector<combinatedPaths_t> combinatedPathesResult;
-    for(int i=0;i<p.numberOfRobotGetter();i++)
+    ExpLib::Struct::subStruct<exploration_msgs::FrontierArray> frontierCoordinatesSub("/extraction_target",1);
+    ExpLib::Struct::pubStruct<geometry_msgs::PoseStamped> goalPosePub("robot1/move_base_simple/goal",1);
+    while (ros::ok())
     {
-        std::vector<robotData> tmpRobotData;
-        p.robotDataSetter(tmpRobotData);
-        robotDatas.push_back(tmpRobotData);
+        frontierCoordinatesSub.q.callOne(ros::WallDuration(1.0));
+        p.recievedFrontierCoordinatesSetter(frontierCoordinatesSub.data);
+        std::vector<std::vector<robotData>> robotDatas;
+        std::vector<combinatedPaths_t> combinatedPathesResult;
+        for(int i=0;i<p.numberOfRobotGetter();i++)
+        {
+            std::vector<robotData> tmpRobotData;
+            p.robotDataSetter(tmpRobotData);
+            robotDatas.push_back(tmpRobotData);
+        }
+        cout << "robotDatas size : " <<robotDatas.size() << endl;
+        combinatedPathesResult=p.combinatedPaths(robotDatas);
+        std::vector<geometry_msgs::PoseStamped> test=p.robotToTarget(combinatedPathesResult,robotDatas);
+        goalPosePub.pub.publish(test.front());//robotの個数分のサイズの配列になっている
     }
-    cout << "robotDatas size : " <<robotDatas.size() << endl;
-    combinatedPathesResult=p.combinatedPaths(robotDatas);
-    std::vector<geometry_msgs::PoseStamped> test=p.robotToTarget(combinatedPathesResult,robotDatas);
+    
     return 0;
 }
