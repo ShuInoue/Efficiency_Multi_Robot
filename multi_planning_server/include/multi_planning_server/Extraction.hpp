@@ -15,7 +15,7 @@ struct MapInformation
     uint32_t mapHeight;
     float mapResolution;
     geometry_msgs::Pose mapOrigin;
-    std::vector<std::vector<int>> mapData;
+    std::vector<std::vector<int8_t>> mapData;
 };
 
 struct SearchVoronoiWindow
@@ -40,7 +40,7 @@ class Extraction
         Extraction(nav_msgs::OccupancyGrid recievedMapData, exploration_msgs::FrontierArray recievedFrontierArray);
         ~Extraction();
         void frontiersCoordinateSetter(const exploration_msgs::FrontierArray &poseArray);
-        void mapInformationSetter(nav_msgs::OccupancyGrid originalMapData,std::vector<std::vector<int>> originalTransMapData);
+        void mapInformationSetter(nav_msgs::OccupancyGrid originalMapData,std::vector<std::vector<int8_t>> originalTransMapData);
         void extractionTarget(void);
         void searchVoronoiWindowSetter(float windowLength);
 };

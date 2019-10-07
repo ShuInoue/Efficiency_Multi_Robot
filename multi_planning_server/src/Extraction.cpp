@@ -3,24 +3,28 @@
 using std::cout;
 using std::endl;
 
-typedef std::vector<std::vector<int>> vv;
+typedef std::vector<std::vector<int8_t>> vv;
 
 Extraction::Extraction(nav_msgs::OccupancyGrid recievedMapData, exploration_msgs::FrontierArray recievedFrontierArray)
 {
     cout << "recievedMapData resolution : " << recievedMapData.info.resolution << endl;
     cout << "recievedFrontierArray size : " << recievedFrontierArray.frontiers.size() << endl;
-    std::vector<int> rowTransMapData;
-    std::vector<std::vector<int>> transMapData;
-    int mapDataCounter;
+    std::vector<int8_t> rowTransMapData;
+    std::vector<std::vector<int8_t>> transMapData;
+    int mapDataCounter=0;
     for(int i=0;i<recievedMapData.info.height;i++)
     {
         for(int j=0;j<recievedMapData.info.width;j++)
         {
+            cout <<  +recievedMapData.data[mapDataCounter];
             rowTransMapData.push_back(recievedMapData.data[mapDataCounter]);
             mapDataCounter++;
         }
         transMapData.push_back(rowTransMapData);
+        rowTransMapData.clear();
+        cout << endl;
     }
+
     mapInformationSetter(recievedMapData,transMapData);
     searchVoronoiWindowSetter(0.3);
     frontiersCoordinateSetter(recievedFrontierArray);
@@ -37,7 +41,7 @@ void Extraction::searchVoronoiWindowSetter(float windowLength)
     SVW.halfSquare = SVW.searchLengthCell / 2;
 }
 
-void Extraction::mapInformationSetter(nav_msgs::OccupancyGrid originalMapData, std::vector<std::vector<int>> originalTransMapData)
+void Extraction::mapInformationSetter(nav_msgs::OccupancyGrid originalMapData, std::vector<std::vector<int8_t>> originalTransMapData)
 {
     MI.mapWidth = originalMapData.info.width;
     MI.mapHeight = originalMapData.info.height;
@@ -145,7 +149,7 @@ int main(int argc, char** argv)
     ExpLib::Struct::pubStruct<exploration_msgs::FrontierArray> publishData("/extraction_target", 10);
     while(ros::ok())
     {
-        voronoiGridTopicSub.q.callOne(ros::WallDuration(1.0));
+        voronoiGridTopicSub.q.callOne(ros::WallDuration(5.0));
         frontierCoordinateSub.q.callOne(ros::WallDuration(1.0));
         cout << "resolution : " <<  voronoiGridTopicSub.data.info.resolution << endl;
         cout << "height : " << voronoiGridTopicSub.data.info.height << endl;

@@ -10,7 +10,7 @@ plan::plan()
 {
     ros::NodeHandle nh("~");
     //nh.getParam("number_of_robots",numberOfRobots);
-    numberOfRobots=2;
+    numberOfRobots=1;
 }
 int plan::numberOfRobotGetter(void)
 {
@@ -125,8 +125,11 @@ double plan::pathlengthFoundwithID(std::vector<std::vector<robotData>> &robotDat
 //CombinatedPaths型からrobtoData型に変化する関数
 robotData plan::transrateFromCombinatedPathsToRobotData(combinatedPaths_t comb, int robotNum)
 {
+    cout << "test" << endl;
     robotData tmpRobotData;
+    cout << "test" << endl;
     tmpRobotData.memberID = comb.chosenID[robotNum-1];
+    cout << "test" << endl;
     return tmpRobotData;
 }
 // 各ロボットの各目的地までの距離を組み合わせて合計していく関数
@@ -175,12 +178,18 @@ std::vector<geometry_msgs::PoseStamped> plan::robotToTarget(std::vector<combinat
     std::vector<geometry_msgs::PoseStamped> robotToTarget;
     for(int i=0; i<numberOfRobots; i++)
     {
+        cout << "test" << endl;
         robotData tmprobot=transrateFromCombinatedPathsToRobotData(combinatedPathsStruct[0],i+1);
+        cout << "test" << endl;
         std::vector<robotData>::iterator itr1=std::find(tmpRobotDatas[i].begin(),tmpRobotDatas[i].end(),robotData{tmprobot});
+        cout << "test" << endl;
         if(itr1 != tmpRobotDatas[i].end())
         {
+            cout << "test" << endl;
             cout << tmpRobotDatas[i][itr1-tmpRobotDatas[i].begin()].goal << endl;
+            cout << "test" << endl;
             robotToTarget.push_back(tmpRobotDatas[i][itr1-tmpRobotDatas[i].begin()].goal);
+            cout << "test" << endl;
         }
     }
     return robotToTarget;
@@ -234,8 +243,11 @@ int main(int argc, char **argv)
         }
         cout << "robotDatas size : " <<robotDatas.size() << endl;
         combinatedPathesResult=p.combinatedPaths(robotDatas);
+        cout << "test" << endl;
         std::vector<geometry_msgs::PoseStamped> test=p.robotToTarget(combinatedPathesResult,robotDatas);
+        cout << "test" << endl;
         goalPosePub.pub.publish(test.front());//robotの個数分のサイズの配列になっている
+        cout << "test" << endl;
     }
     
     return 0;
