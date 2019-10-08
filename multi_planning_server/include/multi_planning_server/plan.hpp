@@ -15,6 +15,9 @@
 #include<functional>
 #include<exploration_msgs/FrontierArray.h>
 #include<exploration_libraly/struct.hpp>
+#include<exploration_libraly/convert.hpp>
+#include<multi_planning_server/voronoi_map.hpp>
+
 
 struct robotData
 {
@@ -45,6 +48,9 @@ struct combinatedPaths
 typedef struct combinatedPaths combinatedPaths_t;
 class plan
 {
+    std::string name="global_costmap";
+    tf::TransformListener tf;
+    costmap_2d::Costmap2DROS globalCostmap;
     int numberOfRobots;
     int numberOfFrontiers;
     int *indexes;
@@ -62,7 +68,7 @@ class plan
     plan();
     int numberOfRobotGetter(void);
     void recievedFrontierCoordinatesSetter(const exploration_msgs::FrontierArray& recievedData);
-    void robotDataSetter(std::vector<robotData>& testRobotData);
+    void robotDataSetter(exploration_msgs::FrontierArray& frontiers,nav_msgs::Odometry& recievedOdometry,std::vector<robotData>& testRobotData);
     double calcPathFromLocationToTarget(geometry_msgs::PoseStamped Goal, nav_msgs::Odometry Location, nav_msgs::Path path);
     std::vector<combinatedPaths_t> combinatedPaths(std::vector<std::vector<robotData>>robotDatas);
     std::vector<geometry_msgs::PoseStamped> robotToTarget(std::vector<combinatedPaths_t> combinatedPathsStruct, std::vector<std::vector<robotData>> tmpRobotDatas);

@@ -25,6 +25,7 @@ class voronoiMap
     void poseSetter(std::string poseName, geometry_msgs::PoseStamped& pose);
     void mergeMapCallBack(const nav_msgs::OccupancyGrid::ConstPtr& mergeMap);
     bool createVoronoiMap(geometry_msgs::PoseStamped& start,geometry_msgs::PoseStamped& goal,std::vector<geometry_msgs::PoseStamped>& plan);
+    bool createVoronoiPath(geometry_msgs::PoseStamped& start,geometry_msgs::PoseStamped& goal,std::vector<geometry_msgs::PoseStamped>& plan);
 
 };
 

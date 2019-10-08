@@ -6,7 +6,7 @@ using std::sort;
 using std::get;
 using std::setw;
 
-plan::plan()
+plan::plan():tf(ros::Duration(10)),globalCostmap("global_costmap",tf)
 {
     ros::NodeHandle nh("~");
     //nh.getParam("number_of_robots",numberOfRobots);
@@ -17,7 +17,7 @@ int plan::numberOfRobotGetter(void)
     return numberOfRobots;
 }
 // ここで処理する用に用意したrobotData型のインスタンスにデータをセットする関数
-void plan::robotDataSetter(std::vector<robotData>& testRobotData)
+void plan::robotDataSetter(exploration_msgs::FrontierArray& frontiers,nav_msgs::Odometry& recievedOdometry,std::vector<robotData>& testRobotData)
 {
     int count=0;
     int id=0;
@@ -66,17 +66,32 @@ void plan::robotDataSetter(std::vector<robotData>& testRobotData)
     for (int i = 0; i < numberOfFrontiers; i++)
     {
         geometry_msgs::PoseStamped tmpgoal;
-        tmpgoal.pose.position.x = recievedFrontierCoordinates[i].x;
-        tmpgoal.pose.position.y = recievedFrontierCoordinates[i].y;
+        tmpgoal.pose.position.x = frontiers.frontiers[i].point.x;
+        tmpgoal.pose.position.y = frontiers.frontiers[i].point.y;
 
         nav_msgs::Odometry tmplocation;
         //tmplocation = *recievedOdometry;
         tmplocation.pose.pose.position.x = recievedOdometry.pose.pose.position.x;
         tmplocation.pose.pose.position.y = recievedOdometry.pose.pose.position.y;
+        geometry_msgs::PoseStamped stampedLocation;
+        stampedLocation.header.frame_id="robot1/map";
+        stampedLocation.pose.position.x=recievedOdometry.pose.pose.position.x;
+        stampedLocation.pose.position.y=recievedOdometry.pose.pose.position.y;
 
-        nav_msgs::Path Path;
 
-        robotData tmprobotdata = {tmpgoal, tmplocation, Path, getDistance(tmpgoal.pose.position.x, tmpgoal.pose.position.y, tmplocation.pose.pose.position.x, tmplocation.pose.pose.position.y), ++id};
+        //nav_msgs::Path Path;
+        std::vector<geometry_msgs::PoseStamped> foundPath;
+        nav_msgs::Path foundNavPath;
+        voronoi_planner::VoronoiPlanner vp;
+        vp.initialize(name,&globalCostmap);
+        vp.makePlan(stampedLocation,tmpgoal,foundPath);
+        for(int i=0;i<foundPath.size();i++)
+        {
+            foundNavPath.poses[i]=foundPath[i];
+        }
+        tmpgoal.header.frame_id="robot1/map";
+        tmpgoal.pose.orientation.w=1.0;
+        robotData tmprobotdata = {tmpgoal, tmplocation, foundNavPath, getDistance(tmpgoal.pose.position.x, tmpgoal.pose.position.y, tmplocation.pose.pose.position.x, tmplocation.pose.pose.position.y), ++id};
         testRobotData.push_back(tmprobotdata);
         cout << setw(15) << testRobotData[i].goal.pose.position.x << setw(15) << testRobotData[i].goal.pose.position.y << setw(15) << testRobotData[i].location.pose.pose.position.x << setw(15) << testRobotData[i].location.pose.pose.position.y << setw(15) << testRobotData[i].pathLength << setw(15) << testRobotData[i].memberID << endl;
     }
@@ -228,17 +243,20 @@ int main(int argc, char **argv)
     ros::init(argc, argv, "plan");
     plan p;
     ExpLib::Struct::subStruct<exploration_msgs::FrontierArray> frontierCoordinatesSub("/extraction_target",1);
+    ExpLib::Struct::subStruct<nav_msgs::Odometry> odometrySub("/robot1/odom",1);
     ExpLib::Struct::pubStruct<geometry_msgs::PoseStamped> goalPosePub("robot1/move_base_simple/goal",1);
     while (ros::ok())
     {
         frontierCoordinatesSub.q.callOne(ros::WallDuration(1.0));
+        odometrySub.q.callOne(ros::WallDuration(1.0));
         p.recievedFrontierCoordinatesSetter(frontierCoordinatesSub.data);
+
         std::vector<std::vector<robotData>> robotDatas;
         std::vector<combinatedPaths_t> combinatedPathesResult;
         for(int i=0;i<p.numberOfRobotGetter();i++)
         {
             std::vector<robotData> tmpRobotData;
-            p.robotDataSetter(tmpRobotData);
+            p.robotDataSetter(frontierCoordinatesSub.data,odometrySub.data,tmpRobotData);
             robotDatas.push_back(tmpRobotData);
         }
         cout << "robotDatas size : " <<robotDatas.size() << endl;
