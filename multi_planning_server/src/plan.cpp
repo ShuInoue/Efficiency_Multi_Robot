@@ -200,6 +200,7 @@ std::vector<geometry_msgs::PoseStamped> plan::robotToTarget(std::vector<combinat
     for(int i=0; i<numberOfRobots; i++)
     {
         robotData tmprobot=transrateFromCombinatedPathsToRobotData(combinatedPathsStruct.back(),i+1);
+        waitTimeByDistance = combinatedPathsStruct.back().combinatedPathLength;
         std::vector<robotData>::iterator itr1=std::find(tmpRobotDatas[i].begin(),tmpRobotDatas[i].end(),robotData{tmprobot});
         if(itr1 != tmpRobotDatas[i].end())
         {
@@ -287,7 +288,7 @@ int main(int argc, char **argv)
         cout << "test size : " << test.size() << endl;
         goalPosePub.pub.publish(test.front());//robotの個数分のサイズの配列になっている
         cout << "plan end" << endl;
-        sleep(2.0);
+        sleep(p.waitTimeByDistance);
     }
     
     return 0;

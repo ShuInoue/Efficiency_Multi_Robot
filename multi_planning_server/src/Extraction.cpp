@@ -2,6 +2,7 @@
 
 using std::cout;
 using std::endl;
+using std::setw;
 
 typedef std::vector<std::vector<int8_t>> vv;
 
@@ -24,7 +25,7 @@ Extraction::Extraction(nav_msgs::OccupancyGrid recievedMapData, exploration_msgs
     }
 
     mapInformationSetter(recievedMapData,transMapData);
-    searchVoronoiWindowSetter(0.2);
+    searchVoronoiWindowSetter(0.1);
     frontiersCoordinateSetter(recievedFrontierArray);
 }
 Extraction::~Extraction()
@@ -51,21 +52,23 @@ void Extraction::mapInformationSetter(nav_msgs::OccupancyGrid originalMapData, s
 
 void Extraction::extractionTarget(void)
 {
-    cout << "[Extraction_Target]----------------------------------------" << endl;
     int Extracted_sum = 0;
     std::vector<double> previousFrontierX,previousFrontierY;
-
+    cout << "frontierCoodinate size : " << frontiersCoordinate.size() << endl;
     //発見した目的地の座標を離散化する（メートル表記の座標からマス目表記の座標に直す）
     for(int i=0; i<frontiersCoordinate.size(); i++)
     {
         previousFrontierX.push_back((frontiersCoordinate[i].x-MI.mapOrigin.position.x)/MI.mapResolution);
-        previousFrontierY.push_back((frontiersCoordinate[i].y - MI.mapOrigin.position.y) / MI.mapResolution);
+        previousFrontierY.push_back((frontiersCoordinate[i].y-MI.mapOrigin.position.y)/MI.mapResolution);
     }
+    cout << "previousfrontierX size :" << previousFrontierX.size() << endl;
+    cout << "previousfrontierY size :" << previousFrontierY.size() << endl;
 
     //マップの端っこに座標があったら探索窓がマップの端を超えないように探査窓の一辺の長さを変更する
-    int k;
+    int k=0;
     for(k=0;k<frontiersCoordinate.size();k++)
     {
+        
 		if(previousFrontierX[k]-SVW.halfSquare < 0)
         {
 			SVW.halfLeftX = previousFrontierX[k];
@@ -73,62 +76,70 @@ void Extraction::extractionTarget(void)
 		else
         {
 			SVW.halfLeftX = SVW.halfSquare;
-		}
+        }
 		if(previousFrontierX[k]+SVW.halfSquare > (MI.mapWidth-1))
         {
 			SVW.halfRightX = (MI.mapWidth-1)-previousFrontierX[k];
-		}
+        }
 		else
         {
 			SVW.halfRightX = SVW.halfSquare;
-		}
+        }
 		if(previousFrontierY[k]-SVW.halfSquare < 0)
         {
 			SVW.halfTopY = previousFrontierY[k];
-		}
+        }
 		else
         {
 			SVW.halfTopY = SVW.halfSquare;
-		}
+        }
 		if(previousFrontierY[k]+SVW.halfSquare > (MI.mapHeight-1))
         {
 			SVW.halfBottomY = (MI.mapHeight-1)-previousFrontierY[k];
-		}
+        }
 		else
         {
 			SVW.halfBottomY = SVW.halfSquare;
-		}
-
+        }
         //検出されたフロンティア座標を中心に窓を作り、その窓内に拡張ボロノイ図に登録されているボロノイ線があればそれを追加
 		int frontierSum = 0;
-		for(int i=(previousFrontierY[k]-SVW.halfTopY);i<(previousFrontierY[k]+SVW.halfBottomY+1);i++)
+        for(int i=(previousFrontierY[k]-SVW.halfTopY);i<(previousFrontierY[k]+SVW.halfBottomY+1);i++)
         {
             for(int j=(previousFrontierX[k]-SVW.halfLeftX);j<(previousFrontierX[k]+SVW.halfRightX+1);j++)
             {
-                frontierSum+=(-1)*MI.mapData[j][i];
+                frontierSum+=(-1)*MI.mapData[i][j];
 			}
 		}
 		if(frontierSum>128)
         {
-			MI.mapData[previousFrontierX[k]][previousFrontierY[k]] = 1;
-		}
+            MI.mapData[previousFrontierY[k]][previousFrontierX[k]] = 1;
+        }
     }
+    cout << "mapheight : " << MI.mapHeight << endl;
+    cout << "mapwidth : " << MI.mapWidth << endl;
+    cout << "mapData height : " << MI.mapData.size() << endl;
+    cout << "mapData width : " << MI.mapData.front().size() << endl;
+    cout << "map resolution : " << MI.mapResolution << endl;
+    cout << "map origin x : " << MI.mapOrigin.position.x << endl;
+    cout << "map origin y : " << MI.mapOrigin.position.y << endl;
+    cout << "extractedCoordinates size : " << extractedCoordinates.frontiers.size() << endl;
 
-    for(int j=0;j<MI.mapHeight;j++)
+    for (int i=0;i<MI.mapHeight;i++)
     {
-        for(int i=0;i<MI.mapWidth;i++)
+        for(int j=0;j<MI.mapWidth;j++)
         {
+
             if (MI.mapData[i][j] == 1)
             {
                 exploration_msgs::Frontier extractedPoint;
                 extractedPoint.point.x = MI.mapResolution * i + MI.mapOrigin.position.x;
                 extractedPoint.point.y = MI.mapResolution * j + MI.mapOrigin.position.y;
                 extractedCoordinates.frontiers.push_back(extractedPoint);
+                cout << "extractedCoordinates size : " << extractedCoordinates.frontiers.size() << endl;
             }
         }
     }
     cout << "extractionjCoordinates size = " << extractedCoordinates.frontiers.size() << endl;
-    cout << "[Extraction_Target]----------------------------------------\n" << endl;
 }
 
 void Extraction::frontiersCoordinateSetter(const exploration_msgs::FrontierArray& poseArray)
@@ -180,7 +191,8 @@ int main(int argc, char** argv)
     ExpLib::Struct::pubStruct<visualization_msgs::Marker>markerPub("extraction_target_marker",1);
     while(ros::ok())
     {
-        voronoiGridTopicSub.q.callOne(ros::WallDuration(5.0));
+        cout << "main loop start" << endl;
+        voronoiGridTopicSub.q.callOne(ros::WallDuration(20.0));
         frontierCoordinateSub.q.callOne(ros::WallDuration(1.0));
         cout << "resolution : " <<  voronoiGridTopicSub.data.info.resolution << endl;
         cout << "height : " << voronoiGridTopicSub.data.info.height << endl;
@@ -190,7 +202,10 @@ int main(int argc, char** argv)
         publishData.pub.publish(E.extractedCoordinates);
         E.extractionTargetMarker = E.publishExtractionTargetMarker(E.extractedCoordinates);
         markerPub.pub.publish(E.extractionTargetMarker);
-        sleep(1.0);
+        E.extractedCoordinates.frontiers.clear();
+        E.extractedCoordinates.frontiers.shrink_to_fit();
+        sleep(2.0);
+        cout << "main loop end" << endl;
     }
     
     return 0;

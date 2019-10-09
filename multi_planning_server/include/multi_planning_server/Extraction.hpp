@@ -9,6 +9,7 @@
 #include<exploration_libraly/struct.hpp>
 #include<exploration_msgs/FrontierArray.h>
 #include<visualization_msgs/Marker.h>
+#include<iomanip>
 
 struct MapInformation
 {

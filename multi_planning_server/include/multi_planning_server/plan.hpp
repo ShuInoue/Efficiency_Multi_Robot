@@ -67,6 +67,7 @@ class plan
 
     public:
     plan();
+    double waitTimeByDistance;
     int numberOfRobotGetter(void);
     void recievedFrontierCoordinatesSetter(const exploration_msgs::FrontierArray& recievedData);
     void robotDataSetter(exploration_msgs::FrontierArray& frontiers,nav_msgs::Odometry& recievedOdometry,std::vector<robotData>& testRobotData);
