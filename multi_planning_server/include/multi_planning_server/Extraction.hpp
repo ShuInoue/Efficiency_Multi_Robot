@@ -8,6 +8,7 @@
 #include<nav_msgs/OccupancyGrid.h>
 #include<exploration_libraly/struct.hpp>
 #include<exploration_msgs/FrontierArray.h>
+#include<visualization_msgs/Marker.h>
 
 struct MapInformation
 {
@@ -36,6 +37,7 @@ class Extraction
     struct SearchVoronoiWindow SVW;
 
     public:
+        visualization_msgs::Marker extractionTargetMarker;
         exploration_msgs::FrontierArray extractedCoordinates;
         Extraction(nav_msgs::OccupancyGrid recievedMapData, exploration_msgs::FrontierArray recievedFrontierArray);
         ~Extraction();
@@ -43,6 +45,7 @@ class Extraction
         void mapInformationSetter(nav_msgs::OccupancyGrid originalMapData,std::vector<std::vector<int8_t>> originalTransMapData);
         void extractionTarget(void);
         void searchVoronoiWindowSetter(float windowLength);
+        visualization_msgs::Marker publishExtractionTargetMarker(exploration_msgs::FrontierArray& extractionTargetForVisualize);
 };
 
 #endif

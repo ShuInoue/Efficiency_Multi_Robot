@@ -199,7 +199,7 @@ std::vector<geometry_msgs::PoseStamped> plan::robotToTarget(std::vector<combinat
     std::vector<geometry_msgs::PoseStamped> robotToTarget;
     for(int i=0; i<numberOfRobots; i++)
     {
-        robotData tmprobot=transrateFromCombinatedPathsToRobotData(combinatedPathsStruct[0],i+1);
+        robotData tmprobot=transrateFromCombinatedPathsToRobotData(combinatedPathsStruct.back(),i+1);
         std::vector<robotData>::iterator itr1=std::find(tmpRobotDatas[i].begin(),tmpRobotDatas[i].end(),robotData{tmprobot});
         if(itr1 != tmpRobotDatas[i].end())
         {
@@ -240,7 +240,7 @@ void plan::recievedFrontierCoordinatesSetter(const exploration_msgs::FrontierArr
 
 bool plan::avoidTargetInRobot(nav_msgs::Odometry& nowLocation,geometry_msgs::PoseStamped& candidateTarget)
 {
-    double robotRadius=0.4;
+    double robotRadius=0.2;
     double lengthFromRobotcenterToTarget=sqrt(pow((candidateTarget.pose.position.x-nowLocation.pose.pose.position.x),2)+pow(candidateTarget.pose.position.y-nowLocation.pose.pose.position.y,2));
     cout << "lengthFromRobotcenterToTarget : " <<lengthFromRobotcenterToTarget << endl;
     cout << "robotRadius : " << robotRadius << endl;
@@ -266,7 +266,7 @@ int main(int argc, char **argv)
     while (ros::ok())
     {
         cout << "plan start" << endl;
-        frontierCoordinatesSub.q.callOne(ros::WallDuration(1.5));
+        frontierCoordinatesSub.q.callOne(ros::WallDuration(2.0));
         odometrySub.q.callOne(ros::WallDuration(1.0));
         p.recievedFrontierCoordinatesSetter(frontierCoordinatesSub.data);
         cout << "test1" << endl;
@@ -287,6 +287,7 @@ int main(int argc, char **argv)
         cout << "test size : " << test.size() << endl;
         goalPosePub.pub.publish(test.front());//robotの個数分のサイズの配列になっている
         cout << "plan end" << endl;
+        sleep(2.0);
     }
     
     return 0;

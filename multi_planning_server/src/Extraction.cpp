@@ -24,7 +24,7 @@ Extraction::Extraction(nav_msgs::OccupancyGrid recievedMapData, exploration_msgs
     }
 
     mapInformationSetter(recievedMapData,transMapData);
-    searchVoronoiWindowSetter(0.3);
+    searchVoronoiWindowSetter(0.2);
     frontiersCoordinateSetter(recievedFrontierArray);
 }
 Extraction::~Extraction()
@@ -138,6 +138,38 @@ void Extraction::frontiersCoordinateSetter(const exploration_msgs::FrontierArray
         frontiersCoordinate.push_back(poseArray.frontiers[i].point);
     }
 }
+visualization_msgs::Marker Extraction::publishExtractionTargetMarker(exploration_msgs::FrontierArray& extractionTargetForVisualize)
+{
+    uint32_t shape=visualization_msgs::Marker::CUBE_LIST;
+    extractionTargetMarker.header.frame_id="robot1/map";
+    extractionTargetMarker.header.stamp=ros::Time::now();
+
+    extractionTargetMarker.ns="extraction_target";
+    extractionTargetMarker.id=0;
+    extractionTargetMarker.type=shape;
+
+    extractionTargetMarker.action=visualization_msgs::Marker::ADD;
+
+
+    extractionTargetMarker.scale.x = 0.05;
+    extractionTargetMarker.scale.y = 0.05;
+    extractionTargetMarker.scale.z = 0.05;
+
+    extractionTargetMarker.color.r = 0.0f;
+    extractionTargetMarker.color.g = 0.0f;
+    extractionTargetMarker.color.b = 1.0f;
+    extractionTargetMarker.color.a = 1.0f;
+    extractionTargetMarker.lifetime=ros::Duration();
+
+    geometry_msgs::Point tmpPoint;
+    for (int i = 0; i < extractedCoordinates.frontiers.size();i++)
+    {
+        tmpPoint.x = extractedCoordinates.frontiers[i].point.x;
+        tmpPoint.y = extractedCoordinates.frontiers[i].point.y;
+        extractionTargetMarker.points.push_back(tmpPoint);
+    }
+    return extractionTargetMarker;
+}
 
 int main(int argc, char** argv)
 {
@@ -145,6 +177,7 @@ int main(int argc, char** argv)
     ExpLib::Struct::subStruct<nav_msgs::OccupancyGrid> voronoiGridTopicSub("/robot1/voronoi_map/global_costmap/voronoi_grid",1);
     ExpLib::Struct::subStruct<exploration_msgs::FrontierArray> frontierCoordinateSub("/Frontier_Target",1);
     ExpLib::Struct::pubStruct<exploration_msgs::FrontierArray> publishData("/extraction_target", 10);
+    ExpLib::Struct::pubStruct<visualization_msgs::Marker>markerPub("extraction_target_marker",1);
     while(ros::ok())
     {
         voronoiGridTopicSub.q.callOne(ros::WallDuration(5.0));
@@ -155,7 +188,8 @@ int main(int argc, char** argv)
         Extraction E(voronoiGridTopicSub.data, frontierCoordinateSub.data);
         E.extractionTarget();
         publishData.pub.publish(E.extractedCoordinates);
-
+        E.extractionTargetMarker = E.publishExtractionTargetMarker(E.extractedCoordinates);
+        markerPub.pub.publish(E.extractionTargetMarker);
         sleep(1.0);
     }
     
