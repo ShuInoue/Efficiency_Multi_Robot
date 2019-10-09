@@ -62,6 +62,7 @@ class plan
     void recursive_comb(int *indexes, int s, int rest, std::function<void(int *)> f);
     void foreach_comb(int n, int k, std::function<void(int *)> f);
     double pathlengthFoundwithID(std::vector<std::vector<robotData>> &robotDataYouWantToKnowPathlength, std::vector<int> chosenID);
+    bool avoidTargetInRobot(nav_msgs::Odometry& nowLocation,geometry_msgs::PoseStamped& candidateTarget);
 
 
     public:

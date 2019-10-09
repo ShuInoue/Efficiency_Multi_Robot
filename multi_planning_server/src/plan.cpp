@@ -78,22 +78,28 @@ void plan::robotDataSetter(exploration_msgs::FrontierArray& frontiers,nav_msgs::
         stampedLocation.pose.position.x=recievedOdometry.pose.pose.position.x;
         stampedLocation.pose.position.y=recievedOdometry.pose.pose.position.y;
 
-
-        //nav_msgs::Path Path;
-        std::vector<geometry_msgs::PoseStamped> foundPath;
-        nav_msgs::Path foundNavPath;
-        voronoi_planner::VoronoiPlanner vp;
-        vp.initialize(name,&globalCostmap);
-        vp.makePlan(stampedLocation,tmpgoal,foundPath);
-        for(int i=0;i<foundPath.size();i++)
+        if(avoidTargetInRobot(tmplocation,tmpgoal))
         {
-            foundNavPath.poses[i]=foundPath[i];
+            //nav_msgs::Path Path;
+            std::vector<geometry_msgs::PoseStamped> foundPath;
+            nav_msgs::Path foundNavPath;
+            voronoi_planner::VoronoiPlanner vp;
+            vp.initialize(name,&globalCostmap);
+            vp.makePlan(stampedLocation,tmpgoal,foundPath);
+            for(int i=0;i<foundPath.size();i++)
+            {
+                foundNavPath.poses[i]=foundPath[i];
+            }
+            tmpgoal.header.frame_id="robot1/map";
+            tmpgoal.pose.orientation.w=1.0;
+            robotData tmprobotdata = {tmpgoal, tmplocation, foundNavPath, getDistance(tmpgoal.pose.position.x, tmpgoal.pose.position.y, tmplocation.pose.pose.position.x, tmplocation.pose.pose.position.y), ++id};
+            testRobotData.push_back(tmprobotdata);
+            cout << setw(15) << testRobotData[i].goal.pose.position.x << setw(15) << testRobotData[i].goal.pose.position.y << setw(15) << testRobotData[i].location.pose.pose.position.x << setw(15) << testRobotData[i].location.pose.pose.position.y << setw(15) << testRobotData[i].pathLength << setw(15) << testRobotData[i].memberID << endl;
         }
-        tmpgoal.header.frame_id="robot1/map";
-        tmpgoal.pose.orientation.w=1.0;
-        robotData tmprobotdata = {tmpgoal, tmplocation, foundNavPath, getDistance(tmpgoal.pose.position.x, tmpgoal.pose.position.y, tmplocation.pose.pose.position.x, tmplocation.pose.pose.position.y), ++id};
-        testRobotData.push_back(tmprobotdata);
-        cout << setw(15) << testRobotData[i].goal.pose.position.x << setw(15) << testRobotData[i].goal.pose.position.y << setw(15) << testRobotData[i].location.pose.pose.position.x << setw(15) << testRobotData[i].location.pose.pose.position.y << setw(15) << testRobotData[i].pathLength << setw(15) << testRobotData[i].memberID << endl;
+        else
+        {
+        }
+        
     }
 }
 // ロボットの現在位置から目的地までの距離を計算する関数
@@ -193,18 +199,12 @@ std::vector<geometry_msgs::PoseStamped> plan::robotToTarget(std::vector<combinat
     std::vector<geometry_msgs::PoseStamped> robotToTarget;
     for(int i=0; i<numberOfRobots; i++)
     {
-        cout << "test" << endl;
         robotData tmprobot=transrateFromCombinatedPathsToRobotData(combinatedPathsStruct[0],i+1);
-        cout << "test" << endl;
         std::vector<robotData>::iterator itr1=std::find(tmpRobotDatas[i].begin(),tmpRobotDatas[i].end(),robotData{tmprobot});
-        cout << "test" << endl;
         if(itr1 != tmpRobotDatas[i].end())
         {
-            cout << "test" << endl;
             cout << tmpRobotDatas[i][itr1-tmpRobotDatas[i].begin()].goal << endl;
-            cout << "test" << endl;
             robotToTarget.push_back(tmpRobotDatas[i][itr1-tmpRobotDatas[i].begin()].goal);
-            cout << "test" << endl;
         }
     }
     return robotToTarget;
@@ -237,6 +237,24 @@ void plan::recievedFrontierCoordinatesSetter(const exploration_msgs::FrontierArr
     }
     numberOfFrontiers = recievedData.frontiers.size();
 }
+
+bool plan::avoidTargetInRobot(nav_msgs::Odometry& nowLocation,geometry_msgs::PoseStamped& candidateTarget)
+{
+    double robotRadius=0.4;
+    double lengthFromRobotcenterToTarget=sqrt(pow((candidateTarget.pose.position.x-nowLocation.pose.pose.position.x),2)+pow(candidateTarget.pose.position.y-nowLocation.pose.pose.position.y,2));
+    cout << "lengthFromRobotcenterToTarget : " <<lengthFromRobotcenterToTarget << endl;
+    cout << "robotRadius : " << robotRadius << endl;
+    if(lengthFromRobotcenterToTarget<robotRadius)
+    {
+        cout << "length < radius" << endl;
+        return false;
+    }
+    else
+    {
+        cout << "length > radius" << endl;
+        return true;
+    }
+}
 // 検査用メイン関数
 int main(int argc, char **argv)
 {
@@ -244,9 +262,10 @@ int main(int argc, char **argv)
     plan p;
     ExpLib::Struct::subStruct<exploration_msgs::FrontierArray> frontierCoordinatesSub("/extraction_target",1);
     ExpLib::Struct::subStruct<nav_msgs::Odometry> odometrySub("/robot1/odom",1);
-    ExpLib::Struct::pubStruct<geometry_msgs::PoseStamped> goalPosePub("robot1/move_base_simple/goal",1);
+    ExpLib::Struct::pubStruct<geometry_msgs::PoseStamped> goalPosePub("/robot1/move_base_simple/goal",1);
     while (ros::ok())
     {
+        cout << "plan start" << endl;
         frontierCoordinatesSub.q.callOne(ros::WallDuration(1.0));
         odometrySub.q.callOne(ros::WallDuration(1.0));
         p.recievedFrontierCoordinatesSetter(frontierCoordinatesSub.data);
@@ -261,11 +280,9 @@ int main(int argc, char **argv)
         }
         cout << "robotDatas size : " <<robotDatas.size() << endl;
         combinatedPathesResult=p.combinatedPaths(robotDatas);
-        cout << "test" << endl;
         std::vector<geometry_msgs::PoseStamped> test=p.robotToTarget(combinatedPathesResult,robotDatas);
-        cout << "test" << endl;
         goalPosePub.pub.publish(test.front());//robotの個数分のサイズの配列になっている
-        cout << "test" << endl;
+        cout << "plan end" << endl;
     }
     
     return 0;

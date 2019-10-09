@@ -16,13 +16,11 @@ Extraction::Extraction(nav_msgs::OccupancyGrid recievedMapData, exploration_msgs
     {
         for(int j=0;j<recievedMapData.info.width;j++)
         {
-            cout <<  +recievedMapData.data[mapDataCounter];
             rowTransMapData.push_back(recievedMapData.data[mapDataCounter]);
             mapDataCounter++;
         }
         transMapData.push_back(rowTransMapData);
         rowTransMapData.clear();
-        cout << endl;
     }
 
     mapInformationSetter(recievedMapData,transMapData);

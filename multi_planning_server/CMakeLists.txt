@@ -217,8 +217,8 @@ install(DIRECTORY include/${PROJECT_NAME}/
 
 add_executable(Frontier_Search src/Frontier_Search.cpp)
 target_link_libraries(Frontier_Search ${catkin_LIBRARIES})
-add_executable(server_planning src/server_planning.cpp)
-target_link_libraries(server_planning ${catkin_LIBRARIES})
+#add_executable(server_planning src/server_planning.cpp)
+#target_link_libraries(server_planning ${catkin_LIBRARIES})
 add_executable(costmap_publisher src/costmap_publisher.cpp)
 target_link_libraries(costmap_publisher ${catkin_LIBRARIES})
 add_executable(check_time_and_area src/check_time_and_area.cpp)
