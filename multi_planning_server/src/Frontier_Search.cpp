@@ -42,6 +42,7 @@ int main(int argc, char **argv)
         }
         cout << "reset part." << endl;
         FS.resetFlag();
+        sleep(1.0);
     }
     cout << "frontier end." << endl;
     return 0;

@@ -106,6 +106,7 @@ int main(int argc, char **argv)
     {
         cout << "main loop." << endl;
         queue.callOne(ros::WallDuration(10.0));
+        sleep(1.0);
     }
     return 0;
 }

@@ -19,6 +19,9 @@ int plan::numberOfRobotGetter(void)
 // ここで処理する用に用意したrobotData型のインスタンスにデータをセットする関数
 void plan::robotDataSetter(exploration_msgs::FrontierArray& frontiers,nav_msgs::Odometry& recievedOdometry,std::vector<robotData>& testRobotData)
 {
+    cout << "frontiers size : " << frontiers.frontiers.size() << endl;
+    cout << "odom : " << recievedOdometry.pose.pose << endl;
+    cout << "testRobotData size :" << testRobotData.size() << endl;
     int count=0;
     int id=0;
     /*
@@ -63,20 +66,20 @@ void plan::robotDataSetter(exploration_msgs::FrontierArray& frontiers,nav_msgs::
         cout << setw(15) << testRobotData[i].goal.pose.position.x << setw(15) << testRobotData[i].goal.pose.position.y << setw(15) << testRobotData[i].location.pose.pose.position.x <<  setw(15) << testRobotData[i].location.pose.pose.position.y << setw(15) << testRobotData[i].pathLength << setw(15) << testRobotData[i].memberID << endl;
     }
     */
+    nav_msgs::Odometry tmplocation;
+    //tmplocation = *recievedOdometry;
+    tmplocation.pose.pose.position.x = recievedOdometry.pose.pose.position.x;
+    tmplocation.pose.pose.position.y = recievedOdometry.pose.pose.position.y;
+    geometry_msgs::PoseStamped stampedLocation;
+    stampedLocation.header.frame_id="robot1/map";
+    stampedLocation.pose.position.x=recievedOdometry.pose.pose.position.x;
+    stampedLocation.pose.position.y=recievedOdometry.pose.pose.position.y;
     for (int i = 0; i < numberOfFrontiers; i++)
     {
         geometry_msgs::PoseStamped tmpgoal;
         tmpgoal.pose.position.x = frontiers.frontiers[i].point.x;
         tmpgoal.pose.position.y = frontiers.frontiers[i].point.y;
 
-        nav_msgs::Odometry tmplocation;
-        //tmplocation = *recievedOdometry;
-        tmplocation.pose.pose.position.x = recievedOdometry.pose.pose.position.x;
-        tmplocation.pose.pose.position.y = recievedOdometry.pose.pose.position.y;
-        geometry_msgs::PoseStamped stampedLocation;
-        stampedLocation.header.frame_id="robot1/map";
-        stampedLocation.pose.position.x=recievedOdometry.pose.pose.position.x;
-        stampedLocation.pose.position.y=recievedOdometry.pose.pose.position.y;
 
         if(avoidTargetInRobot(tmplocation,tmpgoal))
         {
@@ -146,11 +149,8 @@ double plan::pathlengthFoundwithID(std::vector<std::vector<robotData>> &robotDat
 //CombinatedPaths型からrobtoData型に変化する関数
 robotData plan::transrateFromCombinatedPathsToRobotData(combinatedPaths_t comb, int robotNum)
 {
-    cout << "test" << endl;
     robotData tmpRobotData;
-    cout << "test" << endl;
     tmpRobotData.memberID = comb.chosenID[robotNum-1];
-    cout << "test" << endl;
     return tmpRobotData;
 }
 // 各ロボットの各目的地までの距離を組み合わせて合計していく関数
@@ -266,21 +266,25 @@ int main(int argc, char **argv)
     while (ros::ok())
     {
         cout << "plan start" << endl;
-        frontierCoordinatesSub.q.callOne(ros::WallDuration(1.0));
+        frontierCoordinatesSub.q.callOne(ros::WallDuration(1.5));
         odometrySub.q.callOne(ros::WallDuration(1.0));
         p.recievedFrontierCoordinatesSetter(frontierCoordinatesSub.data);
-
+        cout << "test1" << endl;
         std::vector<std::vector<robotData>> robotDatas;
         std::vector<combinatedPaths_t> combinatedPathesResult;
         for(int i=0;i<p.numberOfRobotGetter();i++)
         {
+            cout << "testloop" << endl;
             std::vector<robotData> tmpRobotData;
+            cout << "frontierCoordinatesSub data size : " << frontierCoordinatesSub.data.frontiers.size()  << endl;
             p.robotDataSetter(frontierCoordinatesSub.data,odometrySub.data,tmpRobotData);
             robotDatas.push_back(tmpRobotData);
         }
         cout << "robotDatas size : " <<robotDatas.size() << endl;
         combinatedPathesResult=p.combinatedPaths(robotDatas);
+        cout << "combinatedPathesResult size : " << combinatedPathesResult.size() << endl;
         std::vector<geometry_msgs::PoseStamped> test=p.robotToTarget(combinatedPathesResult,robotDatas);
+        cout << "test size : " << test.size() << endl;
         goalPosePub.pub.publish(test.front());//robotの個数分のサイズの配列になっている
         cout << "plan end" << endl;
     }
