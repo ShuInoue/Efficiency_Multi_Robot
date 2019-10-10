@@ -132,8 +132,8 @@ void Extraction::extractionTarget(void)
             if (MI.mapData[i][j] == 1)
             {
                 exploration_msgs::Frontier extractedPoint;
-                extractedPoint.point.x = MI.mapResolution * i + MI.mapOrigin.position.x;
-                extractedPoint.point.y = MI.mapResolution * j + MI.mapOrigin.position.y;
+                extractedPoint.point.x = MI.mapResolution * j + MI.mapOrigin.position.x;
+                extractedPoint.point.y = MI.mapResolution * i + MI.mapOrigin.position.y;
                 extractedCoordinates.frontiers.push_back(extractedPoint);
                 cout << "extractedCoordinates size : " << extractedCoordinates.frontiers.size() << endl;
             }

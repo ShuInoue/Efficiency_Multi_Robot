@@ -200,7 +200,7 @@ std::vector<geometry_msgs::PoseStamped> plan::robotToTarget(std::vector<combinat
     for(int i=0; i<numberOfRobots; i++)
     {
         robotData tmprobot=transrateFromCombinatedPathsToRobotData(combinatedPathsStruct.back(),i+1);
-        waitTimeByDistance = combinatedPathsStruct.back().combinatedPathLength;
+        waitTimeByDistance = combinatedPathsStruct.front().combinatedPathLength;
         std::vector<robotData>::iterator itr1=std::find(tmpRobotDatas[i].begin(),tmpRobotDatas[i].end(),robotData{tmprobot});
         if(itr1 != tmpRobotDatas[i].end())
         {
