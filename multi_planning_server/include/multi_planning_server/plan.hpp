@@ -67,6 +67,7 @@ class plan
 
     public:
     plan();
+    voronoi_planner::VoronoiPlanner vp;
     double waitTimeByDistance;
     int numberOfRobotGetter(void);
     void recievedFrontierCoordinatesSetter(const exploration_msgs::FrontierArray& recievedData);

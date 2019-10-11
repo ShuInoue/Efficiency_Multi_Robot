@@ -11,6 +11,7 @@ plan::plan():tf(ros::Duration(10)),globalCostmap("global_costmap",tf)
     ros::NodeHandle nh("~");
     //nh.getParam("number_of_robots",numberOfRobots);
     numberOfRobots=1;
+    vp.initialize(name,&globalCostmap);
 }
 int plan::numberOfRobotGetter(void)
 {
@@ -80,15 +81,15 @@ void plan::robotDataSetter(exploration_msgs::FrontierArray& frontiers,nav_msgs::
         tmpgoal.pose.position.x = frontiers.frontiers[i].point.x;
         tmpgoal.pose.position.y = frontiers.frontiers[i].point.y;
 
-
         if(avoidTargetInRobot(tmplocation,tmpgoal))
         {
             //nav_msgs::Path Path;
             std::vector<geometry_msgs::PoseStamped> foundPath;
             nav_msgs::Path foundNavPath;
-            voronoi_planner::VoronoiPlanner vp;
-            vp.initialize(name,&globalCostmap);
+            cout << "stampedLocation : " << stampedLocation << endl;
+            cout << "tmpgoal : " << tmpgoal << endl;
             vp.makePlan(stampedLocation,tmpgoal,foundPath);
+            cout << "foundPath size : " << foundPath.size() << endl;
             for(int i=0;i<foundPath.size();i++)
             {
                 foundNavPath.poses[i]=foundPath[i];
@@ -199,7 +200,7 @@ std::vector<geometry_msgs::PoseStamped> plan::robotToTarget(std::vector<combinat
     std::vector<geometry_msgs::PoseStamped> robotToTarget;
     for(int i=0; i<numberOfRobots; i++)
     {
-        robotData tmprobot=transrateFromCombinatedPathsToRobotData(combinatedPathsStruct.back(),i+1);
+        robotData tmprobot=transrateFromCombinatedPathsToRobotData(combinatedPathsStruct.front(),i+1);
         waitTimeByDistance = combinatedPathsStruct.front().combinatedPathLength;
         std::vector<robotData>::iterator itr1=std::find(tmpRobotDatas[i].begin(),tmpRobotDatas[i].end(),robotData{tmprobot});
         if(itr1 != tmpRobotDatas[i].end())
@@ -267,7 +268,7 @@ int main(int argc, char **argv)
     while (ros::ok())
     {
         cout << "plan start" << endl;
-        frontierCoordinatesSub.q.callOne(ros::WallDuration(2.0));
+        frontierCoordinatesSub.q.callOne(ros::WallDuration(10.0));
         odometrySub.q.callOne(ros::WallDuration(1.0));
         p.recievedFrontierCoordinatesSetter(frontierCoordinatesSub.data);
         cout << "test1" << endl;
