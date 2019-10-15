@@ -78,6 +78,7 @@ void plan::robotDataSetter(exploration_msgs::FrontierArray& frontiers,nav_msgs::
     for (int i = 0; i < numberOfFrontiers; i++)
     {
         geometry_msgs::PoseStamped tmpgoal;
+        tmpgoal.header.frame_id="robot1/map";
         tmpgoal.pose.position.x = frontiers.frontiers[i].point.x;
         tmpgoal.pose.position.y = frontiers.frontiers[i].point.y;
 
@@ -92,12 +93,15 @@ void plan::robotDataSetter(exploration_msgs::FrontierArray& frontiers,nav_msgs::
             cout << "foundPath size : " << foundPath.size() << endl;
             for(int i=0;i<foundPath.size();i++)
             {
-                foundNavPath.poses[i]=foundPath[i];
+                foundNavPath.poses[i].push_back(foundPath[i]);
             }
-            tmpgoal.header.frame_id="robot1/map";
+            cout << "test" << endl;
             tmpgoal.pose.orientation.w=1.0;
+            cout << "test" << endl;
             robotData tmprobotdata = {tmpgoal, tmplocation, foundNavPath, getDistance(tmpgoal.pose.position.x, tmpgoal.pose.position.y, tmplocation.pose.pose.position.x, tmplocation.pose.pose.position.y), ++id};
+            cout << "test" << endl;
             testRobotData.push_back(tmprobotdata);
+            cout << "test" << endl;
             cout << setw(15) << testRobotData[i].goal.pose.position.x << setw(15) << testRobotData[i].goal.pose.position.y << setw(15) << testRobotData[i].location.pose.pose.position.x << setw(15) << testRobotData[i].location.pose.pose.position.y << setw(15) << testRobotData[i].pathLength << setw(15) << testRobotData[i].memberID << endl;
         }
         else
