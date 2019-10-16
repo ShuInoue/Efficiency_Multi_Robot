@@ -18,7 +18,7 @@ int plan::numberOfRobotGetter(void)
     return numberOfRobots;
 }
 // ここで処理する用に用意したrobotData型のインスタンスにデータをセットする関数
-void plan::robotDataSetter(exploration_msgs::FrontierArray& frontiers,nav_msgs::Odometry& recievedOdometry,std::vector<robotData>& testRobotData)
+void plan::robotDataSetter(const exploration_msgs::FrontierArray& frontiers,const nav_msgs::Odometry& recievedOdometry,std::vector<robotData>& testRobotData)
 {
     cout << "frontiers size : " << frontiers.frontiers.size() << endl;
     cout << "odom : " << recievedOdometry.pose.pose << endl;
@@ -75,6 +75,7 @@ void plan::robotDataSetter(exploration_msgs::FrontierArray& frontiers,nav_msgs::
     stampedLocation.header.frame_id="robot1/map";
     stampedLocation.pose.position.x=recievedOdometry.pose.pose.position.x;
     stampedLocation.pose.position.y=recievedOdometry.pose.pose.position.y;
+    int counter=0;
     for (int i = 0; i < numberOfFrontiers; i++)
     {
         geometry_msgs::PoseStamped tmpgoal;
@@ -91,18 +92,15 @@ void plan::robotDataSetter(exploration_msgs::FrontierArray& frontiers,nav_msgs::
             cout << "tmpgoal : " << tmpgoal << endl;
             vp.makePlan(stampedLocation,tmpgoal,foundPath);
             cout << "foundPath size : " << foundPath.size() << endl;
-            for(int i=0;i<foundPath.size();i++)
+            for(int j=0;j<foundPath.size();j++)
             {
-                foundNavPath.poses[i].push_back(foundPath[i]);
+                foundNavPath.poses.push_back(foundPath[j]);
             }
-            cout << "test" << endl;
             tmpgoal.pose.orientation.w=1.0;
-            cout << "test" << endl;
             robotData tmprobotdata = {tmpgoal, tmplocation, foundNavPath, getDistance(tmpgoal.pose.position.x, tmpgoal.pose.position.y, tmplocation.pose.pose.position.x, tmplocation.pose.pose.position.y), ++id};
-            cout << "test" << endl;
             testRobotData.push_back(tmprobotdata);
-            cout << "test" << endl;
-            cout << setw(15) << testRobotData[i].goal.pose.position.x << setw(15) << testRobotData[i].goal.pose.position.y << setw(15) << testRobotData[i].location.pose.pose.position.x << setw(15) << testRobotData[i].location.pose.pose.position.y << setw(15) << testRobotData[i].pathLength << setw(15) << testRobotData[i].memberID << endl;
+            cout << setw(15) << testRobotData[counter].goal.pose.position.x << setw(15) << testRobotData[counter].goal.pose.position.y << setw(15) << testRobotData[counter].location.pose.pose.position.x << setw(15) << testRobotData[counter].location.pose.pose.position.y << setw(15) << testRobotData[counter].pathLength << setw(15) << testRobotData[counter].memberID << endl;
+            counter++;
         }
         else
         {
@@ -204,8 +202,8 @@ std::vector<geometry_msgs::PoseStamped> plan::robotToTarget(std::vector<combinat
     std::vector<geometry_msgs::PoseStamped> robotToTarget;
     for(int i=0; i<numberOfRobots; i++)
     {
-        robotData tmprobot=transrateFromCombinatedPathsToRobotData(combinatedPathsStruct.front(),i+1);
-        waitTimeByDistance = combinatedPathsStruct.front().combinatedPathLength;
+        robotData tmprobot=transrateFromCombinatedPathsToRobotData(combinatedPathsStruct.back(),i+1);
+        waitTimeByDistance = combinatedPathsStruct.back().combinatedPathLength;
         std::vector<robotData>::iterator itr1=std::find(tmpRobotDatas[i].begin(),tmpRobotDatas[i].end(),robotData{tmprobot});
         if(itr1 != tmpRobotDatas[i].end())
         {
@@ -280,7 +278,6 @@ int main(int argc, char **argv)
         std::vector<combinatedPaths_t> combinatedPathesResult;
         for(int i=0;i<p.numberOfRobotGetter();i++)
         {
-            cout << "testloop" << endl;
             std::vector<robotData> tmpRobotData;
             cout << "frontierCoordinatesSub data size : " << frontierCoordinatesSub.data.frontiers.size()  << endl;
             p.robotDataSetter(frontierCoordinatesSub.data,odometrySub.data,tmpRobotData);
@@ -291,7 +288,11 @@ int main(int argc, char **argv)
         cout << "combinatedPathesResult size : " << combinatedPathesResult.size() << endl;
         std::vector<geometry_msgs::PoseStamped> test=p.robotToTarget(combinatedPathesResult,robotDatas);
         cout << "test size : " << test.size() << endl;
-        goalPosePub.pub.publish(test.front());//robotの個数分のサイズの配列になっている
+        if(test.size()!=0)
+        {
+            goalPosePub.pub.publish(test.front());//robotの個数分のサイズの配列になっている
+        }
+        else{}
         cout << "plan end" << endl;
         sleep(p.waitTimeByDistance);
     }

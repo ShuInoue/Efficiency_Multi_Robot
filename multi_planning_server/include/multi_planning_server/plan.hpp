@@ -71,7 +71,7 @@ class plan
     double waitTimeByDistance;
     int numberOfRobotGetter(void);
     void recievedFrontierCoordinatesSetter(const exploration_msgs::FrontierArray& recievedData);
-    void robotDataSetter(exploration_msgs::FrontierArray& frontiers,nav_msgs::Odometry& recievedOdometry,std::vector<robotData>& testRobotData);
+    void robotDataSetter(const exploration_msgs::FrontierArray& frontiers, const nav_msgs::Odometry& recievedOdometry,std::vector<robotData>& testRobotData);
     double calcPathFromLocationToTarget(geometry_msgs::PoseStamped Goal, nav_msgs::Odometry Location, nav_msgs::Path path);
     std::vector<combinatedPaths_t> combinatedPaths(std::vector<std::vector<robotData>>robotDatas);
     std::vector<geometry_msgs::PoseStamped> robotToTarget(std::vector<combinatedPaths_t> combinatedPathsStruct, std::vector<std::vector<robotData>> tmpRobotDatas);
