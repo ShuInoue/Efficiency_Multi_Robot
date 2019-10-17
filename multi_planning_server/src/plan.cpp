@@ -159,7 +159,8 @@ robotData plan::transrateFromCombinatedPathsToRobotData(combinatedPaths_t comb, 
 // 各ロボットの各目的地までの距離を組み合わせて合計していく関数
 std::vector<combinatedPaths_t> plan::combinatedPaths(std::vector<std::vector<robotData>> robotDatas)
 {
-    for(int i=0;i<robotDatas.size();i++)
+    combinatedPatern.clear();
+    for (int i = 0; i < robotDatas.size(); i++)
     {
         int count=0;
         for(int j=0;j<robotDatas[i].size();j++)
