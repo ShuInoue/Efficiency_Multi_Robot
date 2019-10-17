@@ -202,8 +202,8 @@ std::vector<geometry_msgs::PoseStamped> plan::robotToTarget(std::vector<combinat
     std::vector<geometry_msgs::PoseStamped> robotToTarget;
     for(int i=0; i<numberOfRobots; i++)
     {
-        robotData tmprobot=transrateFromCombinatedPathsToRobotData(combinatedPathsStruct.back(),i+1);
-        waitTimeByDistance = combinatedPathsStruct.back().combinatedPathLength;
+        robotData tmprobot=transrateFromCombinatedPathsToRobotData(combinatedPathsStruct.front(),i+1);
+        waitTimeByDistance = combinatedPathsStruct.front().combinatedPathLength;
         std::vector<robotData>::iterator itr1=std::find(tmpRobotDatas[i].begin(),tmpRobotDatas[i].end(),robotData{tmprobot});
         if(itr1 != tmpRobotDatas[i].end())
         {
@@ -259,6 +259,24 @@ bool plan::avoidTargetInRobot(nav_msgs::Odometry& nowLocation,geometry_msgs::Pos
         return true;
     }
 }
+
+void firstTurn(void)
+{
+    ExpLib::Struct::pubStruct<geometry_msgs::Twist> firstTurnPub("/robot1/mobile_base/commands/velocity",1);
+    sleep(0.1);
+    geometry_msgs::Twist firstTurnAngularSpeed;
+    firstTurnAngularSpeed.angular.z=1.0;
+    ros::Rate loopRate=0.5;
+    int timeCounter=0;
+    while(ros::ok() && timeCounter<=10)
+    {
+        firstTurnPub.pub.publish(firstTurnAngularSpeed);
+        loopRate.sleep();
+        timeCounter++;
+    }
+
+}
+
 // 検査用メイン関数
 int main(int argc, char **argv)
 {
@@ -267,6 +285,7 @@ int main(int argc, char **argv)
     ExpLib::Struct::subStruct<exploration_msgs::FrontierArray> frontierCoordinatesSub("/extraction_target",1);
     ExpLib::Struct::subStruct<nav_msgs::Odometry> odometrySub("/robot1/odom",1);
     ExpLib::Struct::pubStruct<geometry_msgs::PoseStamped> goalPosePub("/robot1/move_base_simple/goal",1);
+    firstTurn();
     while (ros::ok())
     {
         cout << "plan start" << endl;
