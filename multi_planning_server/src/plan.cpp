@@ -25,6 +25,7 @@ void plan::robotDataSetter(const exploration_msgs::FrontierArray& frontiers,cons
     cout << "testRobotData size :" << testRobotData.size() << endl;
     int count=0;
     int id=0;
+    avoidedTargetCounter=0;
     /*
     //test data
     nav_msgs::Path testPath;
@@ -88,8 +89,6 @@ void plan::robotDataSetter(const exploration_msgs::FrontierArray& frontiers,cons
             //nav_msgs::Path Path;
             std::vector<geometry_msgs::PoseStamped> foundPath;
             nav_msgs::Path foundNavPath;
-            cout << "stampedLocation : " << stampedLocation << endl;
-            cout << "tmpgoal : " << tmpgoal << endl;
             vp.makePlan(stampedLocation,tmpgoal,foundPath);
             cout << "foundPath size : " << foundPath.size() << endl;
             for(int j=0;j<foundPath.size();j++)
@@ -104,8 +103,9 @@ void plan::robotDataSetter(const exploration_msgs::FrontierArray& frontiers,cons
         }
         else
         {
+            cout << "avoided target" << endl;
+            avoidedTargetCounter++;
         }
-        
     }
 }
 // ロボットの現在位置から目的地までの距離を計算する関数
@@ -134,16 +134,15 @@ double plan::getDistance(double x, double y, double x2, double y2)
 double plan::pathlengthFoundwithID(std::vector<std::vector<robotData>> &robotDataYouWantToKnowPathlength, std::vector<int> chosenID)
 {
     double totalPathlength=0;
+    int next=0;
     for(int i=0;i<chosenID.size();i++)
     {
         double Pathlength=0;
         robotData tmprobot;
         tmprobot.memberID=chosenID[i];
         std::vector<robotData>::iterator itr1=std::find(robotDataYouWantToKnowPathlength[i].begin(),robotDataYouWantToKnowPathlength[i].end(),robotData{tmprobot});
-        if(itr1 != robotDataYouWantToKnowPathlength[i].end())
-        {
+            cout << "set pathlength" << endl;
             Pathlength = robotDataYouWantToKnowPathlength[i][itr1-robotDataYouWantToKnowPathlength[i].begin()].pathLength;
-        }
         cout << "pathlength : " << Pathlength << endl;
         totalPathlength += Pathlength;
     }
@@ -154,11 +153,14 @@ robotData plan::transrateFromCombinatedPathsToRobotData(combinatedPaths_t comb, 
 {
     robotData tmpRobotData;
     tmpRobotData.memberID = comb.chosenID[robotNum-1];
+    //tmpRobotData.pathLength = comb.combinatedPathLength[robotNum -1];
     return tmpRobotData;
 }
 // 各ロボットの各目的地までの距離を組み合わせて合計していく関数
 std::vector<combinatedPaths_t> plan::combinatedPaths(std::vector<std::vector<robotData>> robotDatas)
 {
+    int candidateCombinateTargetSize=0;
+    candidateCombinateTargetSize=robotDatas.front().size();
     combinatedPatern.clear();
     for (int i = 0; i < robotDatas.size(); i++)
     {
@@ -169,7 +171,7 @@ std::vector<combinatedPaths_t> plan::combinatedPaths(std::vector<std::vector<rob
             robotDatas[i][j].memberID=count;
         }
     }
-    foreach_comb(numberOfFrontiers,numberOfRobots,[this](int *indexes)
+    foreach_comb(candidateCombinateTargetSize,numberOfRobots,[this](int *indexes)
     {
         static int foreach_combCounter=0;
         std::vector<int> combinatedElement;
@@ -201,10 +203,19 @@ std::vector<combinatedPaths_t> plan::combinatedPaths(std::vector<std::vector<rob
 std::vector<geometry_msgs::PoseStamped> plan::robotToTarget(std::vector<combinatedPaths_t> combinatedPathsStruct, std::vector<std::vector<robotData>> tmpRobotDatas)
 {
     std::vector<geometry_msgs::PoseStamped> robotToTarget;
+    cout << "tmprobotData size : " << tmpRobotDatas.size() << "tmprobotdata front size : " << tmpRobotDatas.front().size() << endl;
     for(int i=0; i<numberOfRobots; i++)
     {
+        cout << "combinatedPathStruct size : " << combinatedPathsStruct.size() << endl;
         robotData tmprobot=transrateFromCombinatedPathsToRobotData(combinatedPathsStruct.front(),i+1);
+        cout << tmprobot.goal << endl;
+        cout << tmprobot.memberID << endl;
+        cout << tmprobot.pathLength << endl;
         waitTimeByDistance = combinatedPathsStruct.front().combinatedPathLength;
+        for(int test=0;test<tmpRobotDatas.front().size();test++)
+        {
+            cout << "tmpRobotDatas memberID : " << tmpRobotDatas[i][test].memberID << endl; 
+        }
         std::vector<robotData>::iterator itr1=std::find(tmpRobotDatas[i].begin(),tmpRobotDatas[i].end(),robotData{tmprobot});
         if(itr1 != tmpRobotDatas[i].end())
         {
@@ -245,18 +256,14 @@ void plan::recievedFrontierCoordinatesSetter(const exploration_msgs::FrontierArr
 
 bool plan::avoidTargetInRobot(nav_msgs::Odometry& nowLocation,geometry_msgs::PoseStamped& candidateTarget)
 {
-    double robotRadius=0.2;
+    double robotRadius=0.3;
     double lengthFromRobotcenterToTarget=sqrt(pow((candidateTarget.pose.position.x-nowLocation.pose.pose.position.x),2)+pow(candidateTarget.pose.position.y-nowLocation.pose.pose.position.y,2));
-    cout << "lengthFromRobotcenterToTarget : " <<lengthFromRobotcenterToTarget << endl;
-    cout << "robotRadius : " << robotRadius << endl;
     if(lengthFromRobotcenterToTarget<robotRadius)
     {
-        cout << "length < radius" << endl;
         return false;
     }
     else
     {
-        cout << "length > radius" << endl;
         return true;
     }
 }
@@ -292,8 +299,11 @@ int main(int argc, char **argv)
         cout << "plan start" << endl;
         frontierCoordinatesSub.q.callOne(ros::WallDuration(10.0));
         odometrySub.q.callOne(ros::WallDuration(1.0));
+        if(frontierCoordinatesSub.data.frontiers.size() == 0)
+        {
+            continue;
+        }
         p.recievedFrontierCoordinatesSetter(frontierCoordinatesSub.data);
-        cout << "test1" << endl;
         std::vector<std::vector<robotData>> robotDatas;
         std::vector<combinatedPaths_t> combinatedPathesResult;
         for(int i=0;i<p.numberOfRobotGetter();i++)
@@ -304,6 +314,7 @@ int main(int argc, char **argv)
             robotDatas.push_back(tmpRobotData);
         }
         cout << "robotDatas size : " <<robotDatas.size() << endl;
+        cout << "robotDatas front size : " << robotDatas.front().size() << endl;
         combinatedPathesResult=p.combinatedPaths(robotDatas);
         cout << "combinatedPathesResult size : " << combinatedPathesResult.size() << endl;
         std::vector<geometry_msgs::PoseStamped> test=p.robotToTarget(combinatedPathesResult,robotDatas);

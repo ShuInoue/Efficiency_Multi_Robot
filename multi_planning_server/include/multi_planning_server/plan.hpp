@@ -54,6 +54,7 @@ class plan
     int numberOfRobots;
     int numberOfFrontiers;
     int *indexes;
+    int avoidedTargetCounter;
     std::vector<geometry_msgs::Point> recievedFrontierCoordinates;
     nav_msgs::Odometry recievedOdometry;
     std::vector<std::vector<int>> combinatedPatern;
