@@ -25,7 +25,7 @@ Extraction::Extraction(nav_msgs::OccupancyGrid recievedMapData, exploration_msgs
     }
 
     mapInformationSetter(recievedMapData,transMapData);
-    searchVoronoiWindowSetter(0.1);
+    searchVoronoiWindowSetter(0.3);
     frontiersCoordinateSetter(recievedFrontierArray);
 }
 Extraction::~Extraction()

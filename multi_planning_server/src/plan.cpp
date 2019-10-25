@@ -211,7 +211,7 @@ std::vector<geometry_msgs::PoseStamped> plan::robotToTarget(std::vector<combinat
         cout << tmprobot.goal << endl;
         cout << tmprobot.memberID << endl;
         cout << tmprobot.pathLength << endl;
-        waitTimeByDistance = combinatedPathsStruct.front().combinatedPathLength;
+        waitTimeByDistance = combinatedPathsStruct.front().combinatedPathLength/0.2;
         for(int test=0;test<tmpRobotDatas.front().size();test++)
         {
             cout << "tmpRobotDatas memberID : " << tmpRobotDatas[i][test].memberID << endl; 
@@ -290,6 +290,7 @@ int main(int argc, char **argv)
 {
     ros::init(argc, argv, "plan");
     plan p;
+    ros::Time planStartTime=ros::Time::now();
     ExpLib::Struct::subStruct<exploration_msgs::FrontierArray> frontierCoordinatesSub("/extraction_target",1);
     ExpLib::Struct::subStruct<nav_msgs::Odometry> odometrySub("/robot1/odom",1);
     ExpLib::Struct::pubStruct<geometry_msgs::PoseStamped> goalPosePub("/robot1/move_base_simple/goal",1);
@@ -323,7 +324,10 @@ int main(int argc, char **argv)
         {
             goalPosePub.pub.publish(test.front());//robotの個数分のサイズの配列になっている
         }
-        else{}
+        else
+        {
+            cout << "exploration time = " << (ros::Time::now() - planStartTime).toSec() << "[s]" << endl;
+        }
         cout << "plan end" << endl;
         sleep(p.waitTimeByDistance);
     }
