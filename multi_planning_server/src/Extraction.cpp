@@ -197,15 +197,23 @@ int main(int argc, char** argv)
         cout << "resolution : " <<  voronoiGridTopicSub.data.info.resolution << endl;
         cout << "height : " << voronoiGridTopicSub.data.info.height << endl;
         cout << "width : " << voronoiGridTopicSub.data.info.width << endl;
-        Extraction E(voronoiGridTopicSub.data, frontierCoordinateSub.data);
-        E.extractionTarget();
-        publishData.pub.publish(E.extractedCoordinates);
-        E.extractionTargetMarker = E.publishExtractionTargetMarker(E.extractedCoordinates);
-        markerPub.pub.publish(E.extractionTargetMarker);
-        E.extractedCoordinates.frontiers.clear();
-        E.extractedCoordinates.frontiers.shrink_to_fit();
-        sleep(2.0);
-        cout << "main loop end" << endl;
+        if(frontierCoordinateSub.data.frontiers.size()!=0)
+        {
+            Extraction E(voronoiGridTopicSub.data, frontierCoordinateSub.data);
+            E.extractionTarget();
+            publishData.pub.publish(E.extractedCoordinates);
+            E.extractionTargetMarker = E.publishExtractionTargetMarker(E.extractedCoordinates);
+            markerPub.pub.publish(E.extractionTargetMarker);
+            E.extractedCoordinates.frontiers.clear();
+            E.extractedCoordinates.frontiers.shrink_to_fit();
+            sleep(2.0);
+            cout << "main loop end" << endl;
+        }
+        else
+        {
+            continue;
+        }
+        
     }
     
     return 0;
