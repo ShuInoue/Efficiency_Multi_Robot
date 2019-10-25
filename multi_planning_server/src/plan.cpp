@@ -318,7 +318,14 @@ int main(int argc, char **argv)
         cout << "robotDatas front size : " << robotDatas.front().size() << endl;
         combinatedPathesResult=p.combinatedPaths(robotDatas);
         cout << "combinatedPathesResult size : " << combinatedPathesResult.size() << endl;
-        std::vector<geometry_msgs::PoseStamped> test=p.robotToTarget(combinatedPathesResult,robotDatas);
+        if(combinatedPathesResult.size()!=0)
+        {
+            std::vector<geometry_msgs::PoseStamped> test=p.robotToTarget(combinatedPathesResult,robotDatas);
+        }
+        else
+        {
+            continue;
+        }
         cout << "test size : " << test.size() << endl;
         if(test.size()!=0)
         {
