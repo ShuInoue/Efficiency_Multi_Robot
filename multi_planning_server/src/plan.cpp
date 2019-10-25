@@ -321,19 +321,20 @@ int main(int argc, char **argv)
         if(combinatedPathesResult.size()!=0)
         {
             std::vector<geometry_msgs::PoseStamped> test=p.robotToTarget(combinatedPathesResult,robotDatas);
+            cout << "test size : " << test.size() << endl;
+            if(test.size()!=0)
+            {
+                goalPosePub.pub.publish(test.front());//robotの個数分のサイズの配列になっている
+            }
+            else
+            {
+                cout << "exploration time = " << (ros::Time::now() - planStartTime).toSec() << "[s]" << endl;
+                break;
+            }
         }
         else
         {
             continue;
-        }
-        cout << "test size : " << test.size() << endl;
-        if(test.size()!=0)
-        {
-            goalPosePub.pub.publish(test.front());//robotの個数分のサイズの配列になっている
-        }
-        else
-        {
-            cout << "exploration time = " << (ros::Time::now() - planStartTime).toSec() << "[s]" << endl;
         }
         cout << "plan end" << endl;
         sleep(p.waitTimeByDistance);
