@@ -192,8 +192,8 @@ int main(int argc, char** argv)
     while(ros::ok())
     {
         cout << "main loop start" << endl;
-        voronoiGridTopicSub.q.callOne(ros::WallDuration(2.0));
-        frontierCoordinateSub.q.callOne(ros::WallDuration(2.0));
+        voronoiGridTopicSub.q.callOne(ros::WallDuration(0.1));
+        frontierCoordinateSub.q.callOne(ros::WallDuration(0.1));
         cout << "resolution : " <<  voronoiGridTopicSub.data.info.resolution << endl;
         cout << "height : " << voronoiGridTopicSub.data.info.height << endl;
         cout << "width : " << voronoiGridTopicSub.data.info.width << endl;
@@ -206,7 +206,7 @@ int main(int argc, char** argv)
             markerPub.pub.publish(E.extractionTargetMarker);
             E.extractedCoordinates.frontiers.clear();
             E.extractedCoordinates.frontiers.shrink_to_fit();
-            sleep(2.0);
+            sleep(0.09);
             cout << "main loop end" << endl;
         }
         else
