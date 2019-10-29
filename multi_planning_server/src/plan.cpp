@@ -96,7 +96,7 @@ void plan::robotDataSetter(const exploration_msgs::FrontierArray& frontiers,cons
                 foundNavPath.poses.push_back(foundPath[j]);
             }
             tmpgoal.pose.orientation.w=1.0;
-            robotData tmprobotdata = {tmpgoal, tmplocation, foundNavPath, getDistance(tmpgoal.pose.position.x, tmpgoal.pose.position.y, tmplocation.pose.pose.position.x, tmplocation.pose.pose.position.y), ++id};
+            robotData tmprobotdata = {tmpgoal, tmplocation, foundNavPath, calcPathFromLocationToTarget(tmpgoal, tmplocation,foundNavPath), ++id};
             testRobotData.push_back(tmprobotdata);
             cout << setw(15) << testRobotData[counter].goal.pose.position.x << setw(15) << testRobotData[counter].goal.pose.position.y << setw(15) << testRobotData[counter].location.pose.pose.position.x << setw(15) << testRobotData[counter].location.pose.pose.position.y << setw(15) << testRobotData[counter].pathLength << setw(15) << testRobotData[counter].memberID << endl;
             counter++;
