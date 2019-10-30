@@ -84,13 +84,13 @@ void plan::robotDataSetter(const exploration_msgs::FrontierArray& frontiers,cons
         tmpgoal.pose.position.x = frontiers.frontiers[i].point.x;
         tmpgoal.pose.position.y = frontiers.frontiers[i].point.y;
 
-        if(avoidTargetInRobot(tmplocation,tmpgoal))
+        //nav_msgs::Path Path;
+        std::vector<geometry_msgs::PoseStamped> foundPath;
+        nav_msgs::Path foundNavPath;
+        vp.makePlan(stampedLocation,tmpgoal,foundPath);
+        cout << "foundPath size : " << foundPath.size() << endl;
+        if(avoidTargetInRobot(tmplocation,tmpgoal) || foundPath.size()!=0)
         {
-            //nav_msgs::Path Path;
-            std::vector<geometry_msgs::PoseStamped> foundPath;
-            nav_msgs::Path foundNavPath;
-            vp.makePlan(stampedLocation,tmpgoal,foundPath);
-            cout << "foundPath size : " << foundPath.size() << endl;
             for(int j=0;j<foundPath.size();j++)
             {
                 foundNavPath.poses.push_back(foundPath[j]);

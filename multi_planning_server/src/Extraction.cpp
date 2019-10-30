@@ -4,8 +4,6 @@ using std::cout;
 using std::endl;
 using std::setw;
 
-typedef std::vector<std::vector<int8_t>> vv;
-
 Extraction::Extraction(nav_msgs::OccupancyGrid recievedMapData, exploration_msgs::FrontierArray recievedFrontierArray)
 {
     cout << "recievedMapData resolution : " << recievedMapData.info.resolution << endl;
@@ -48,7 +46,6 @@ void Extraction::mapInformationSetter(nav_msgs::OccupancyGrid originalMapData, s
     MI.mapOrigin = originalMapData.info.origin;
     MI.mapData = originalTransMapData;
 }
-
 
 void Extraction::extractionTarget(void)
 {
@@ -192,8 +189,8 @@ int main(int argc, char** argv)
     while(ros::ok())
     {
         cout << "main loop start" << endl;
-        voronoiGridTopicSub.q.callOne(ros::WallDuration(0.1));
-        frontierCoordinateSub.q.callOne(ros::WallDuration(0.1));
+        voronoiGridTopicSub.q.callOne(ros::WallDuration(1.0));
+        frontierCoordinateSub.q.callOne(ros::WallDuration(1.0));
         cout << "resolution : " <<  voronoiGridTopicSub.data.info.resolution << endl;
         cout << "height : " << voronoiGridTopicSub.data.info.height << endl;
         cout << "width : " << voronoiGridTopicSub.data.info.width << endl;
@@ -206,15 +203,13 @@ int main(int argc, char** argv)
             markerPub.pub.publish(E.extractionTargetMarker);
             E.extractedCoordinates.frontiers.clear();
             E.extractedCoordinates.frontiers.shrink_to_fit();
-            sleep(0.09);
+            sleep(0.1);
             cout << "main loop end" << endl;
         }
         else
         {
             continue;
         }
-        
     }
-    
     return 0;
 }
