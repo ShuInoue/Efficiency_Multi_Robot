@@ -1,0 +1,34 @@
+<?xml version="1.0"?>
+<launch>
+    <env name="GAZEBO_MODEL_PATH" value="$(find simulator_pack)/world/models:$(optenv GAZEBO_MODEL_PATH)"/>
+    <arg name="world_file" default="$(find simulator_pack)/world/simple_test_model.world"/>
+
+    <arg name="gui" default="true"/>
+    <arg name="rtabmap" default="true"/>
+
+    <arg name="robot1_name" default="robot1"/>
+    <arg name="robot1_init_x" default="0.0"/>
+    <arg name="robot1_init_y" default="0.0"/>
+    <arg name="robot1_init_yaw" default="0.0"/>
+
+    <include file="$(find gazebo_ros)/launch/empty_world.launch">
+        <arg name="use_sim_time" default="true"/>
+        <arg name="debug" default="false"/>
+        <arg name="gui" default="$(arg gui)"/>
+        <arg name="world_name" default="$(arg world_file)"/>
+    </include>
+
+    <group ns="$(arg robot1_name)">
+        <include file="$(find multi_turtlebot_gazebo)/launch/includes/one_turtlebot_spawn.launch.xml">
+            <arg name="robot_name" default="$(arg robot1_name)"/>
+            <arg name="init_x" default="$(arg robot1_init_x)"/>
+            <arg name="init_y" default="$(arg robot1_init_y)"/>
+            <arg name="init_yaw" default="$(arg robot1_init_yaw)"/>
+        </include>
+        <include file="$(find multi_turtlebot_gazebo)/launch/includes/one_turtlebot_rtabmap.launch.xml">
+            <arg name="robot_name" default="$(arg robot1_name)"/>
+        </include>
+        
+    </group>
+
+</launch>
