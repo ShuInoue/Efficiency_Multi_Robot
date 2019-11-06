@@ -1,14 +1,14 @@
 <?xml version="1.0"?>
 <launch>
-    <env name="GAZEBO_MODEL_PATH" value="$(find simulator_pack)/world/models:$(optenv GAZEBO_MODEL_PATH)"/>
-    <arg name="world_file" default="$(find simulator_pack)/world/simple_test_model.world"/>
+    <env name="GAZEBO_MODEL_PATH" value="$(find simulator_pack)/models:$(optenv GAZEBO_MODEL_PATH)"/>
+    <arg name="world_file" default="$(find simulator_pack)/world/model.world"/>
 
     <arg name="gui" default="true"/>
     <arg name="rtabmap" default="true"/>
 
     <arg name="robot1_name" default="robot1"/>
-    <arg name="robot1_init_x" default="0.0"/>
-    <arg name="robot1_init_y" default="0.0"/>
+    <arg name="robot1_init_x" default="6.0"/>
+    <arg name="robot1_init_y" default="-15.0"/>
     <arg name="robot1_init_yaw" default="0.0"/>
 
     <include file="$(find gazebo_ros)/launch/empty_world.launch">
