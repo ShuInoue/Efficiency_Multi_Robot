@@ -189,8 +189,8 @@ int main(int argc, char** argv)
     while(ros::ok())
     {
         cout << "main loop start" << endl;
-        voronoiGridTopicSub.q.callOne(ros::WallDuration(1.0));
-        frontierCoordinateSub.q.callOne(ros::WallDuration(1.0));
+        voronoiGridTopicSub.q.callOne(ros::WallDuration(2.0));
+        frontierCoordinateSub.q.callOne(ros::WallDuration(2.0));
         cout << "resolution : " <<  voronoiGridTopicSub.data.info.resolution << endl;
         cout << "height : " << voronoiGridTopicSub.data.info.height << endl;
         cout << "width : " << voronoiGridTopicSub.data.info.width << endl;

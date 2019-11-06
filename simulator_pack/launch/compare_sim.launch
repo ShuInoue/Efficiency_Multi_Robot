@@ -9,7 +9,7 @@
     <arg name="robot1_name" default="robot1"/>
     <arg name="robot1_init_x" default="6.0"/>
     <arg name="robot1_init_y" default="-15.0"/>
-    <arg name="robot1_init_yaw" default="0.0"/>
+    <arg name="robot1_init_yaw" default="1.57"/>
 
     <include file="$(find gazebo_ros)/launch/empty_world.launch">
         <arg name="use_sim_time" default="true"/>

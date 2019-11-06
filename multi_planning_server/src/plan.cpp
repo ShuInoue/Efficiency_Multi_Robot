@@ -289,6 +289,7 @@ int main(int argc, char **argv)
         }
         else
         {
+            cout << "exploration time = " << (ros::Time::now() - planStartTime).toSec() << "[s]" << endl;
             continue;
         }
         cout << "plan end" << endl;
