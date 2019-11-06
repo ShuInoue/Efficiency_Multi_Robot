@@ -349,9 +349,9 @@ void Frontier_Search::Publish_marker(void)
 	
 	marker.lifetime = ros::Duration();
 
-	marker.scale.x = 0.05;
-	marker.scale.y = 0.05;
-	marker.scale.z = 0.05;
+	marker.scale.x = 0.5;
+	marker.scale.y = 0.5;
+	marker.scale.z = 0.5;
 	
 	marker.color.r = 0.0f;
 	marker.color.g = 1.0f;
