@@ -159,9 +159,9 @@ visualization_msgs::Marker Extraction::publishExtractionTargetMarker(exploration
     extractionTargetMarker.action=visualization_msgs::Marker::ADD;
 
 
-    extractionTargetMarker.scale.x = 0.5;
-    extractionTargetMarker.scale.y = 0.5;
-    extractionTargetMarker.scale.z = 0.5;
+    extractionTargetMarker.scale.x = 0.2;
+    extractionTargetMarker.scale.y = 0.2;
+    extractionTargetMarker.scale.z = 0.2;
 
     extractionTargetMarker.color.r = 0.0f;
     extractionTargetMarker.color.g = 0.0f;
