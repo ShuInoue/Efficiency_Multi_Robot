@@ -131,6 +131,7 @@ void Extraction::extractionTarget(void)
                 exploration_msgs::Frontier extractedPoint;
                 extractedPoint.point.x = MI.mapResolution * j + MI.mapOrigin.position.x;
                 extractedPoint.point.y = MI.mapResolution * i + MI.mapOrigin.position.y;
+                extractedCoordinates.header.stamp = ros::Time::now();
                 extractedCoordinates.frontiers.push_back(extractedPoint);
                 cout << "extractedCoordinates size : " << extractedCoordinates.frontiers.size() << endl;
             }
@@ -172,6 +173,7 @@ visualization_msgs::Marker Extraction::publishExtractionTargetMarker(exploration
     geometry_msgs::Point tmpPoint;
     for (int i = 0; i < extractedCoordinates.frontiers.size();i++)
     {
+
         tmpPoint.x = extractedCoordinates.frontiers[i].point.x;
         tmpPoint.y = extractedCoordinates.frontiers[i].point.y;
         extractionTargetMarker.points.push_back(tmpPoint);
