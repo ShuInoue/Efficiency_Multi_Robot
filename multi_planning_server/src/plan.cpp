@@ -164,9 +164,8 @@ std::vector<geometry_msgs::PoseStamped> plan::robotToTarget(std::vector<combinat
     {
         cout << "combinatedPathStruct size : " << combinatedPathsStruct.size() << endl;
         robotData tmprobot=transrateFromCombinatedPathsToRobotData(combinatedPathsStruct.front(),i+1);
-        cout << tmprobot.goal << endl;
         cout << tmprobot.memberID << endl;
-        cout << tmprobot.pathLength << endl;
+        //waitTimeByDistance = 0;
         waitTimeByDistance = combinatedPathsStruct.front().combinatedPathLength/0.2;
         for(int test=0;test<tmpRobotDatas.front().size();test++)
         {
@@ -178,6 +177,7 @@ std::vector<geometry_msgs::PoseStamped> plan::robotToTarget(std::vector<combinat
             cout << tmpRobotDatas[i][itr1-tmpRobotDatas[i].begin()].goal << endl;
             robotToTarget.push_back(tmpRobotDatas[i][itr1-tmpRobotDatas[i].begin()].goal);
         }
+        
     }
     return robotToTarget;
 }
@@ -206,22 +206,30 @@ void plan::recievedFrontierCoordinatesSetter(const exploration_msgs::FrontierArr
     for(int i=0;i<recievedData.frontiers.size();i++)
     {
         recievedFrontierCoordinates.push_back(recievedData.frontiers[i].point);
+        extractionTimeStamp = recievedData.frontiers[i].header.stamp;
     }
     numberOfFrontiers = recievedData.frontiers.size();
 }
 
 bool plan::avoidTargetInRobot(nav_msgs::Odometry& nowLocation,geometry_msgs::PoseStamped& candidateTarget)
 {
-    double robotRadius=0.3;
+    double robotRadius=0.2;
     double lengthFromRobotcenterToTarget=sqrt(pow((candidateTarget.pose.position.x-nowLocation.pose.pose.position.x),2)+pow(candidateTarget.pose.position.y-nowLocation.pose.pose.position.y,2));
     if(lengthFromRobotcenterToTarget<robotRadius)
     {
+        cout << "false" << endl;
         return false;
     }
     else
     {
+        cout << "true" << endl;
         return true;
     }
+}
+
+ros::Time plan::timeStampGetter(void)
+{
+    return extractionTimeStamp;
 }
 
 void firstTurn(void)
@@ -240,6 +248,7 @@ void firstTurn(void)
     }
 
 }
+
 
 // 検査用メイン関数
 int main(int argc, char **argv)
@@ -277,6 +286,7 @@ int main(int argc, char **argv)
         if(combinatedPathesResult.size()!=0)
         {
             std::vector<geometry_msgs::PoseStamped> test=p.robotToTarget(combinatedPathesResult,robotDatas);
+            test.front().header.stamp = p.timeStampGetter();
             cout << "test size : " << test.size() << endl;
             if(test.size()!=0)
             {

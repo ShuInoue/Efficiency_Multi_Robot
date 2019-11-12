@@ -55,6 +55,7 @@ class plan
     int numberOfFrontiers;
     int *indexes;
     int avoidedTargetCounter;
+    ros::Time extractionTimeStamp;
     std::vector<geometry_msgs::Point> recievedFrontierCoordinates;
     nav_msgs::Odometry recievedOdometry;
     std::vector<std::vector<int>> combinatedPatern;
@@ -74,6 +75,7 @@ class plan
     void recievedFrontierCoordinatesSetter(const exploration_msgs::FrontierArray& recievedData);
     void robotDataSetter(const exploration_msgs::FrontierArray& frontiers, const nav_msgs::Odometry& recievedOdometry,std::vector<robotData>& testRobotData);
     double calcPathFromLocationToTarget(geometry_msgs::PoseStamped Goal, nav_msgs::Odometry Location, nav_msgs::Path path);
+    ros::Time timeStampGetter(void);
     std::vector<combinatedPaths_t> combinatedPaths(std::vector<std::vector<robotData>>robotDatas);
     std::vector<geometry_msgs::PoseStamped> robotToTarget(std::vector<combinatedPaths_t> combinatedPathsStruct, std::vector<std::vector<robotData>> tmpRobotDatas);
 };
