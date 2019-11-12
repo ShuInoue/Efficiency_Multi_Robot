@@ -70,7 +70,7 @@ int main(int argc, char** argv){
 	ros::NodeHandle d;
 
 	odom_data_option = ros::SubscribeOptions::create<geometry_msgs::Point>("/robot1/odom",1,odom_data,ros::VoidPtr(),&odom_data_queue);
-	map_data_option = ros::SubscribeOptions::create<nav_msgs::OccupancyGrid>("//server/grid_map_merge/merge_map",1,map_data,ros::VoidPtr(),&map_data_queue);
+	map_data_option = ros::SubscribeOptions::create<nav_msgs::OccupancyGrid>("/robot1/map_continuity",1,map_data,ros::VoidPtr(),&map_data_queue);
 	timing_option = ros::SubscribeOptions::create<std_msgs::Int8>("/timing_check",1,timing,ros::VoidPtr(),&timing_queue);
 
 	odom_data_sub = d.subscribe(odom_data_option);

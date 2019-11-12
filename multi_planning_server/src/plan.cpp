@@ -46,7 +46,8 @@ void plan::robotDataSetter(const exploration_msgs::FrontierArray& frontiers,cons
         nav_msgs::Path foundNavPath;
         vp.makePlan(stampedLocation,tmpgoal,foundPath);
         cout << "foundPath size : " << foundPath.size() << endl;
-        if(avoidTargetInRobot(tmplocation,tmpgoal) || foundPath.size()!=0)
+        //if(avoidTargetInRobot(tmplocation,tmpgoal) && foundPath.size()!=0)
+        if(avoidTargetInRobot(tmplocation,tmpgoal))
         {
             for(int j=0;j<foundPath.size();j++)
             {
@@ -279,6 +280,7 @@ int main(int argc, char **argv)
             cout << "test size : " << test.size() << endl;
             if(test.size()!=0)
             {
+                cout << "test pose : " << test.front() << endl;
                 goalPosePub.pub.publish(test.front());//robotの個数分のサイズの配列になっている
             }
             else

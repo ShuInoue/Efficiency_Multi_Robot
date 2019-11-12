@@ -28,6 +28,7 @@
         <include file="$(find multi_turtlebot_gazebo)/launch/includes/one_turtlebot_rtabmap.launch.xml">
             <arg name="robot_name" default="$(arg robot1_name)"/>
         </include>
+
         
     </group>
 
