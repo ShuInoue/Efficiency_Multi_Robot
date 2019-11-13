@@ -10,6 +10,9 @@
     <arg name="robot1_init_x" default="6.0"/>
     <arg name="robot1_init_y" default="-15.0"/>
     <arg name="robot1_init_yaw" default="1.57"/>
+    <arg name="map_path" default="$(find simulator_pack)/launch/config/map.yaml"/>
+    <arg name="map_frame" default="$(arg robot1_name)/map"/>
+    <arg name="map_topic" default="/$(arg robot1_name)/map"/>
 
     <include file="$(find gazebo_ros)/launch/empty_world.launch">
         <arg name="use_sim_time" default="true"/>
@@ -28,8 +31,19 @@
         <include file="$(find multi_turtlebot_gazebo)/launch/includes/one_turtlebot_rtabmap.launch.xml">
             <arg name="robot_name" default="$(arg robot1_name)"/>
         </include>
+        <!-- <include file="$(find multi_turtlebot_gazebo)/launch/includes/move_base.launch.xml">
+            <arg name="robot_name" value="$(arg robot1_name)"/>
+            <arg name="global_frame_id" value="$(arg map_frame)"/>
+            <arg name="map_topic" default="$(arg map_topic)"/>
+        </include>
 
-        
+        <node pkg="tf" type="static_transform_publisher" name="odom_to_map_tf_broadcaster" args="0 0 0 0 0 0 $(arg robot1_name)/map $(arg robot1_name)/odom 100"/>
+
+        <node pkg="map_server" type="map_server" name="map_server" args="$(arg map_path)">
+            <remap from="map" to="$(arg map_topic)"/>
+            <param name="frame_id" value="$(arg map_frame)"/>
+        </node>
+         -->
     </group>
 
 </launch>
