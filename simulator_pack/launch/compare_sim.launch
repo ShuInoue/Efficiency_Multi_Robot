@@ -7,12 +7,27 @@
     <arg name="rtabmap" default="true"/>
 
     <arg name="robot1_name" default="robot1"/>
-    <!-- <arg name="robot1_init_x" default="9.21"/>
-    <arg name="robot1_init_y" default="-11.36"/>
-    <arg name="robot1_init_yaw" default="0.0"/> -->
-    <arg name="robot1_init_x" default="6.0"/>
+    
+    <!-- <arg name="robot1_init_x" default="6.0"/>
     <arg name="robot1_init_y" default="-15.0"/>
-    <arg name="robot1_init_yaw" default="1.57"/>
+    <arg name="robot1_init_yaw" default="1.57"/> -->
+
+    <arg name="robot1_init_x" default="9.21"/>
+    <arg name="robot1_init_y" default="-11.36"/>
+    <arg name="robot1_init_yaw" default="0.0"/>
+    
+    <!-- <arg name="robot1_init_x" default="8.0"/>
+    <arg name="robot1_init_y" default="14.0"/>
+    <arg name="robot1_init_yaw" default="1.57"/> -->
+
+    <!-- <arg name="robot1_init_x" default="-8.0"/>
+    <arg name="robot1_init_y" default="-11.5"/>
+    <arg name="robot1_init_yaw" default="0.0"/> -->
+
+    <!-- <arg name="robot1_init_x" default="-8.0"/>
+    <arg name="robot1_init_y" default="3.5"/>
+    <arg name="robot1_init_yaw" default="0.0"/> -->
+    
     <arg name="map_path" default="$(find simulator_pack)/launch/config/map.yaml"/>
     <arg name="map_frame" default="$(arg robot1_name)/map"/>
     <arg name="map_topic" default="/$(arg robot1_name)/map"/>
