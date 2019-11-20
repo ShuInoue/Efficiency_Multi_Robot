@@ -46,10 +46,12 @@ void plan::robotDataSetter(const exploration_msgs::FrontierArray& frontiers,cons
         //nav_msgs::Path Path;
         std::vector<geometry_msgs::PoseStamped> foundPath;
         nav_msgs::Path foundNavPath;
+        ros::spinOnce();
+        vp.initialize(name,&globalCostmap);
         vp.makePlan(stampedLocation,tmpgoal,foundPath);
         cout << "foundPath size : " << foundPath.size() << endl;
-        //if(avoidTargetInRobot(tmplocation,tmpgoal) && foundPath.size()!=0)
-        if(avoidTargetInRobot(tmplocation,tmpgoal))
+        //if(avoidTargetInRobot(tmplocation,tmpgoal))
+        if(avoidTargetInRobot(tmplocation,tmpgoal) && foundPath.size()!=0)
         {
             for(int j=0;j<foundPath.size();j++)
             {
@@ -272,7 +274,7 @@ void navStatusCallBack(const actionlib_msgs::GoalStatusArray::ConstPtr &status)
     }
     else
     {
-
+        
     }
     cout << "status_id : " << status_id << endl;
     if(status_id==1)
@@ -281,7 +283,7 @@ void navStatusCallBack(const actionlib_msgs::GoalStatusArray::ConstPtr &status)
         isRobotReachedGoal = false;
     }
 
-    if((status_id==3)||(status_id==0))
+    if((status_id==3)||(status_id==0)||(status_id==4))
     {
         //ゴールに到達・もしくはゴールに到達して待機中。
         isRobotReachedGoal = true;
