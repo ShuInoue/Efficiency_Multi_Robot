@@ -6,6 +6,8 @@ using std::sort;
 using std::get;
 using std::setw;
 
+bool isRobotReachedGoal;
+
 plan::plan():tf(ros::Duration(10)),globalCostmap("global_costmap",tf)
 {
     ros::NodeHandle nh("~");
@@ -248,6 +250,37 @@ void firstTurn(void)
     }
 
 }
+void navStatusCallBack(const actionlib_msgs::GoalStatusArray::ConstPtr &status)
+{
+    cout << "callback : " << status->status_list[0] << endl;
+    int status_id = 0;
+    //uint8 PENDING         = 0  
+    //uint8 ACTIVE          = 1 
+    //uint8 PREEMPTED       = 2
+    //uint8 SUCCEEDED       = 3
+    //uint8 ABORTED         = 4
+    //uint8 REJECTED        = 5
+    //uint8 PREEMPTING      = 6
+    //uint8 RECALLING       = 7
+    //uint8 RECALLED        = 8
+    //uint8 LOST            = 9
+
+    if (!status->status_list.empty()){
+    actionlib_msgs::GoalStatus goalStatus = status->status_list[0];
+    status_id = goalStatus.status;
+    }
+    cout << "status_id : " << status_id << endl;
+    if(status_id==1){
+    //移動中
+    }
+
+    if((status_id==3)||(status_id==0)){
+    //ゴールに到達・もしくはゴールに到達して待機中。
+        isRobotReachedGoal == true;
+        cout << "flag is true." << endl;
+    }
+
+}
 
 
 // 検査用メイン関数
@@ -258,9 +291,13 @@ int main(int argc, char **argv)
     ros::Time planStartTime=ros::Time::now();
     ExpLib::Struct::subStruct<exploration_msgs::FrontierArray> frontierCoordinatesSub("/extraction_target",1);
     ExpLib::Struct::subStruct<nav_msgs::Odometry> odometrySub("/robot1/odom",1);
-    ExpLib::Struct::subStruct<actionlib_msgs::GoalStatus> goalStatusSub("/robot1/move_base/status",1);
+    //ExpLib::Struct::subStruct<actionlib_msgs::GoalStatus> goalStatusSub("/robot1/move_base/status",1,&plan::navStatusCallBack ,p);
     ExpLib::Struct::pubStruct<geometry_msgs::PoseStamped> goalPosePub("/robot1/move_base_simple/goal",1);
-    
+    ros::NodeHandle nh2;
+    ros::Subscriber move_base_status_sub;
+    ros::CallbackQueue queue;
+    nh2.setCallbackQueue(&queue);
+    move_base_status_sub = nh2.subscribe<actionlib_msgs::GoalStatusArray>("/robot1/move_base/status", 1, &navStatusCallBack);
     firstTurn();
     while (ros::ok())
     {
@@ -308,10 +345,21 @@ int main(int argc, char **argv)
         }
         cout << "plan end" << endl;
         sleep(0.5);
-        while(goalStatusSub.data.ACTIVE && ros::ok())
+        
+        while(!isRobotReachedGoal && ros::ok())
         {
-            goalStatusSub.q.callOne();
+            cout << "1" << endl;
+            queue.callOne(ros::WallDuration(0.1));
+            cout << "2" << endl;
+            if(isRobotReachedGoal == true)
+            {
+                cout << "3" << endl;
+                break;
+            }
+            cout << "4" << endl;
         }
+        cout << "5" << endl;
+        isRobotReachedGoal == false;
     }
     
     return 0;

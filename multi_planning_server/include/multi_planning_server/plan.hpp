@@ -19,6 +19,9 @@
 #include<exploration_libraly/convert.hpp>
 #include<multi_planning_server/voronoi_map.hpp>
 #include<actionlib_msgs/GoalStatus.h>
+#include<move_base_msgs/MoveBaseAction.h>
+#include<actionlib_msgs/GoalStatusArray.h>
+#include<actionlib/client/simple_action_client.h>
 
 struct robotData
 {
@@ -60,18 +63,21 @@ class plan
     std::vector<geometry_msgs::Point> recievedFrontierCoordinates;
     nav_msgs::Odometry recievedOdometry;
     std::vector<std::vector<int>> combinatedPatern;
+
     double getDistance(double x, double y, double x2, double y2);
     robotData transrateFromCombinatedPathsToRobotData(combinatedPaths_t comb, int robotNum);
     void recursive_comb(int *indexes, int s, int rest, std::function<void(int *)> f);
     void foreach_comb(int n, int k, std::function<void(int *)> f);
     double pathlengthFoundwithID(std::vector<std::vector<robotData>> &robotDataYouWantToKnowPathlength, std::vector<int> chosenID);
     bool avoidTargetInRobot(nav_msgs::Odometry& nowLocation,geometry_msgs::PoseStamped& candidateTarget);
+    //void navStatusCallBack(const actionlib_msgs::GoalStatusArray::ConstPtr &status);
 
 
     public:
     plan();
     voronoi_planner::VoronoiPlanner vp;
     double waitTimeByDistance;
+    //bool isRobotReachedGoal;
     int numberOfRobotGetter(void);
     void recievedFrontierCoordinatesSetter(const exploration_msgs::FrontierArray& recievedData);
     void robotDataSetter(const exploration_msgs::FrontierArray& frontiers, const nav_msgs::Odometry& recievedOdometry,std::vector<robotData>& testRobotData);
