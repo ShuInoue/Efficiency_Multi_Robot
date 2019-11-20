@@ -258,7 +258,9 @@ int main(int argc, char **argv)
     ros::Time planStartTime=ros::Time::now();
     ExpLib::Struct::subStruct<exploration_msgs::FrontierArray> frontierCoordinatesSub("/extraction_target",1);
     ExpLib::Struct::subStruct<nav_msgs::Odometry> odometrySub("/robot1/odom",1);
+    ExpLib::Struct::subStruct<actionlib_msgs::GoalStatus> goalStatusSub("/robot1/move_base/status",1);
     ExpLib::Struct::pubStruct<geometry_msgs::PoseStamped> goalPosePub("/robot1/move_base_simple/goal",1);
+    
     firstTurn();
     while (ros::ok())
     {
@@ -305,7 +307,11 @@ int main(int argc, char **argv)
             continue;
         }
         cout << "plan end" << endl;
-        sleep(p.waitTimeByDistance);
+        sleep(0.5);
+        while(goalStatusSub.data.ACTIVE && ros::ok())
+        {
+            goalStatusSub.q.callOne();
+        }
     }
     
     return 0;

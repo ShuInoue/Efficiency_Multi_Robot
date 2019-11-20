@@ -18,6 +18,7 @@
 #include<exploration_libraly/struct.hpp>
 #include<exploration_libraly/convert.hpp>
 #include<multi_planning_server/voronoi_map.hpp>
+#include<actionlib_msgs/GoalStatus.h>
 
 struct robotData
 {
