@@ -6,7 +6,7 @@ using std::sort;
 using std::get;
 using std::setw;
 
-bool isRobotReachedGoal;
+bool isRobotReachedGoal = false;
 
 plan::plan():tf(ros::Duration(10)),globalCostmap("global_costmap",tf)
 {
@@ -265,18 +265,26 @@ void navStatusCallBack(const actionlib_msgs::GoalStatusArray::ConstPtr &status)
     //uint8 RECALLED        = 8
     //uint8 LOST            = 9
 
-    if (!status->status_list.empty()){
-    actionlib_msgs::GoalStatus goalStatus = status->status_list[0];
-    status_id = goalStatus.status;
+    if (!status->status_list.empty())
+    {
+        actionlib_msgs::GoalStatus goalStatus = status->status_list[0];
+        status_id = goalStatus.status;
+    }
+    else
+    {
+
     }
     cout << "status_id : " << status_id << endl;
-    if(status_id==1){
-    //移動中
+    if(status_id==1)
+    {
+        //移動中
+        isRobotReachedGoal = false;
     }
 
-    if((status_id==3)||(status_id==0)){
-    //ゴールに到達・もしくはゴールに到達して待機中。
-        isRobotReachedGoal == true;
+    if((status_id==3)||(status_id==0))
+    {
+        //ゴールに到達・もしくはゴールに到達して待機中。
+        isRobotReachedGoal = true;
         cout << "flag is true." << endl;
     }
 
@@ -346,7 +354,7 @@ int main(int argc, char **argv)
         cout << "plan end" << endl;
         sleep(0.5);
         
-        while(!isRobotReachedGoal && ros::ok())
+        while(isRobotReachedGoal == false && ros::ok())
         {
             cout << "1" << endl;
             queue.callOne(ros::WallDuration(0.1));
@@ -359,7 +367,7 @@ int main(int argc, char **argv)
             cout << "4" << endl;
         }
         cout << "5" << endl;
-        isRobotReachedGoal == false;
+        isRobotReachedGoal = false;
     }
     
     return 0;
