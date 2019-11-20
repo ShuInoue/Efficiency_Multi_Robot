@@ -48,8 +48,8 @@ void plan::robotDataSetter(const exploration_msgs::FrontierArray& frontiers,cons
         nav_msgs::Path foundNavPath;
         vp.makePlan(stampedLocation,tmpgoal,foundPath);
         cout << "foundPath size : " << foundPath.size() << endl;
-        //if(avoidTargetInRobot(tmplocation,tmpgoal) && foundPath.size()!=0)
-        if(avoidTargetInRobot(tmplocation,tmpgoal))
+        //if(avoidTargetInRobot(tmplocation,tmpgoal))
+        if(avoidTargetInRobot(tmplocation,tmpgoal) && foundPath.size()!=0)
         {
             for(int j=0;j<foundPath.size();j++)
             {
