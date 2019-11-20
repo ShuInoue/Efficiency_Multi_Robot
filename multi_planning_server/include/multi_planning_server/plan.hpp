@@ -22,6 +22,7 @@
 #include<move_base_msgs/MoveBaseAction.h>
 #include<actionlib_msgs/GoalStatusArray.h>
 #include<actionlib/client/simple_action_client.h>
+#include<voronoi_planner/planner_core.h>
 
 struct robotData
 {

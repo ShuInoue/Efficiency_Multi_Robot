@@ -36,6 +36,9 @@ void plan::robotDataSetter(const exploration_msgs::FrontierArray& frontiers,cons
     stampedLocation.pose.position.x=recievedOdometry.pose.pose.position.x;
     stampedLocation.pose.position.y=recievedOdometry.pose.pose.position.y;
     int counter=0;
+    ros::spinOnce();
+    voronoi_planner::VoronoiPlanner VP;
+    VP.initialize(name,&globalCostmap);
     for (int i = 0; i < numberOfFrontiers; i++)
     {
         geometry_msgs::PoseStamped tmpgoal;
@@ -46,9 +49,7 @@ void plan::robotDataSetter(const exploration_msgs::FrontierArray& frontiers,cons
         //nav_msgs::Path Path;
         std::vector<geometry_msgs::PoseStamped> foundPath;
         nav_msgs::Path foundNavPath;
-        ros::spinOnce();
-        vp.initialize(name,&globalCostmap);
-        vp.makePlan(stampedLocation,tmpgoal,foundPath);
+        VP.makePlan(stampedLocation,tmpgoal,foundPath);
         cout << "foundPath size : " << foundPath.size() << endl;
         //if(avoidTargetInRobot(tmplocation,tmpgoal))
         if(avoidTargetInRobot(tmplocation,tmpgoal) && foundPath.size()!=0)
