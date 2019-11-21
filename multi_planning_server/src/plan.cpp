@@ -243,13 +243,12 @@ void firstTurn(void)
     sleep(0.1);
     geometry_msgs::Twist firstTurnAngularSpeed;
     firstTurnAngularSpeed.angular.z=1.0;
-    ros::Rate loopRate=0.5;
-    int timeCounter=0;
-    while(ros::ok() && timeCounter<=10)
+    ros::Time turnTime=ros::Time::now();
+    double turnOutTime;
+    while(ros::ok() && turnOutTime <= 6.28)
     {
         firstTurnPub.pub.publish(firstTurnAngularSpeed);
-        loopRate.sleep();
-        timeCounter++;
+        turnOutTime = ros::Time::now().toSec() - turnTime.toSec(); 
     }
 
 }
