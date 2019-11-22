@@ -3,12 +3,26 @@
     <arg name="base_frame_id" default="$(arg robot_name)/base_footprint"/>
     <arg name="global_frame_id" default="$(arg robot_name)/map"/>
     <arg name="topic_ns" default="$(arg robot_name)"/>
+    <arg name="debug" default="false"/>
 
-<group ns="$(arg robot_name)">
+<group ns="$(arg robot_name)" if="$(arg debug)">
     <node pkg="multi_planning_server" type="plan" name="plan" respawn="true" output="screen" launch-prefix="valgrind --leak-check=full">
         <param name="namespace" value="$(arg robot_name)"/>
         <rosparam file="$(find multi_planning_server)/params/costmap_common_params.yaml" command="load" ns="global_costmap"/>
 		<rosparam file="$(find multi_planning_server)/params/global_costmap_params.yaml" command="load" ns="global_costmap"/>
+        <param name="global_frame" value="$(arg global_frame_id)"/>
+        <param name="robot_base_frame" value="$(arg base_frame_id)"/>
+        <!-- <rosparam file="$(find exploration)/param/path_planner_params.yaml" command="load"/> -->
+        <param name="global_costmap/global_frame" value="robot1/map"/>
+        <param name="global_costmap/robot_base_frame" value="robot1/base_footprint"/>
+        <remap from="map" to="map_continuity"/>
+    </node>
+</group>
+<group ns="$(arg robot_name)" unless="$(arg debug)">
+    <node pkg="multi_planning_server" type="plan" name="plan" respawn="true" output="screen">
+        <param name="namespace" value="$(arg robot_name)"/>
+        <rosparam file="$(find multi_planning_server)/params/costmap_common_params.yaml" command="load" ns="global_costmap"/>
+        <rosparam file="$(find multi_planning_server)/params/global_costmap_params.yaml" command="load" ns="global_costmap"/>
         <param name="global_frame" value="$(arg global_frame_id)"/>
         <param name="robot_base_frame" value="$(arg base_frame_id)"/>
         <!-- <rosparam file="$(find exploration)/param/path_planner_params.yaml" command="load"/> -->
