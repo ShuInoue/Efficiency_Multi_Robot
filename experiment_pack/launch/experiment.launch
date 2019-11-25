@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+<launch>
+    <arg name="robot_name" default="robot1"/>
+    <arg name="multi" default="false"/>
+
+    <include file="$(find multi_turtlebot_bringup)/launch/turtlebot.launch.xml"/>
+    <include file="$(find multi_turtlebot_mapping)/launch/rtabmap.launch.xml">
+        <arg name="merge_map_frame" default="/server/merge_map"/>
+        <arg name="merge_map_topic" default="/server/merge_map/grid"/>
+        <arg name="map_frame" default="$(arg robot_name)/map"/>
+        <arg name="map_topic" default="/$(arg robot_name)/map_continuity"/>
+    </include>
+    <node pkg="exploration_support" type="map_continuity" name="map_continuity">
+        <remap from="map" to="$(arg robot_name)"/>
+        <remap from="map_continuity" to="$(arg robot_name)/map_continuity"/>
+        <remap from="costmap_continuity" to="$(arg robot_name)/costmap_continuity"/ >
+    </node>
+    <node pkg="exploration_support" type="frontier_detection" name="frontier_detection">
+        <remap from="map" to="$(arg robot_name)"/>
+        <remap from="frontier" to="extraction_target"/>
+    </node>
+    <include file="$(find multi_planning_server)/launch/plan.launch.xml"/>
+
+</launch>
