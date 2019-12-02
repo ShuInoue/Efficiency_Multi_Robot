@@ -345,7 +345,7 @@ int main(int argc, char **argv)
             else
             {
                 cout << "exploration time = " << (ros::Time::now() - planStartTime).toSec() << "[s]" << endl;
-                break;
+                goto END;
             }
         }
         else
@@ -358,19 +358,14 @@ int main(int argc, char **argv)
         
         while(isRobotReachedGoal == false && ros::ok())
         {
-            cout << "1" << endl;
             queue.callOne(ros::WallDuration(0.1));
-            cout << "2" << endl;
             if(isRobotReachedGoal == true)
             {
-                cout << "3" << endl;
                 break;
             }
-            cout << "4" << endl;
         }
-        cout << "5" << endl;
         isRobotReachedGoal = false;
     }
-    
+    END:
     return 0;
 }
