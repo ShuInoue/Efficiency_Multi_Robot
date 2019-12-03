@@ -211,7 +211,7 @@ void plan::recievedFrontierCoordinatesSetter(const exploration_msgs::FrontierArr
     for(int i=0;i<recievedData.frontiers.size();i++)
     {
         recievedFrontierCoordinates.push_back(recievedData.frontiers[i].point);
-        extractionTimeStamp = recievedData.frontiers[i].header.stamp;
+        extractionTimeStamp = recievedData.header.stamp;
     }
     numberOfFrontiers = recievedData.frontiers.size();
 }
