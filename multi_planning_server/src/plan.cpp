@@ -358,7 +358,7 @@ int main(int argc, char **argv)
         
         while(isRobotReachedGoal == false && ros::ok())
         {
-            queue.callOne(ros::WallDuration(0.1));
+            queue.callOne(ros::WallDuration(0.3));
             if(isRobotReachedGoal == true)
             {
                 break;
