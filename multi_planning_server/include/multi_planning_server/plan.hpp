@@ -24,6 +24,7 @@
 #include<actionlib_msgs/GoalStatusArray.h>
 #include<actionlib/client/simple_action_client.h>
 #include<voronoi_planner/planner_core.h>
+#include<navfn/navfn_ros.h>
 
 struct robotData
 {
