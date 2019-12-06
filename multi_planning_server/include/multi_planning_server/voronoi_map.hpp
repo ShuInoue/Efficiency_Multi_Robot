@@ -2,7 +2,7 @@
 #define _VORONOI_MAP_
 
 #include<ros/ros.h>
-#include<exploration_libraly/struct.hpp>
+#include<exploration_libraly/struct.h>
 #include<voronoi_planner/planner_core.h>
 #include<costmap_2d/costmap_2d_ros.h>
 #include<nav_msgs/OccupancyGrid.h>

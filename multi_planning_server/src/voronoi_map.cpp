@@ -1,5 +1,5 @@
 #include<multi_planning_server/voronoi_map.hpp>
-#include <exploration_libraly/path_planning.hpp>
+#include <exploration_libraly/path_planning.h>
 #include <voronoi_planner/planner_core.h>
 #include <navfn/navfn_ros.h>
 
