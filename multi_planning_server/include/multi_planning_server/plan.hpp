@@ -79,7 +79,6 @@ class plan
     plan();
     voronoi_planner::VoronoiPlanner vp;
     double waitTimeByDistance;
-    std::vector<geometry_msgs::PoseStamped> blackList;
     //bool isRobotReachedGoal;
     int numberOfRobotGetter(void);
     void recievedFrontierCoordinatesSetter(const exploration_msgs::FrontierArray& recievedData);
