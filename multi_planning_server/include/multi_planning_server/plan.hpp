@@ -17,6 +17,7 @@
 #include<exploration_msgs/FrontierArray.h>
 #include<exploration_libraly/struct.h>
 #include<exploration_libraly/convert.h>
+#include <exploration_libraly/path_planning.h>
 #include<multi_planning_server/voronoi_map.hpp>
 #include<actionlib_msgs/GoalStatus.h>
 #include<move_base_msgs/MoveBaseAction.h>
@@ -78,6 +79,7 @@ class plan
     plan();
     voronoi_planner::VoronoiPlanner vp;
     double waitTimeByDistance;
+    std::vector<geometry_msgs::PoseStamped> blackList;
     //bool isRobotReachedGoal;
     int numberOfRobotGetter(void);
     void recievedFrontierCoordinatesSetter(const exploration_msgs::FrontierArray& recievedData);

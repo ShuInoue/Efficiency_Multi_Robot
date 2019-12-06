@@ -8,8 +8,10 @@ using std::setw;
 
 bool isRobotReachedGoal = false;
 bool isRobotGotGoal = false;
+std::vector<geometry_msgs::PoseStamped> test;
+std::vector<geometry_msgs::PoseStamped> blackList;
 
-plan::plan():tf(ros::Duration(10)),globalCostmap("global_costmap",tf)
+plan::plan() : tf(ros::Duration(10)), globalCostmap("global_costmap", tf)
 {
     ros::NodeHandle nh("~");
     //nh.getParam("number_of_robots",numberOfRobots);
@@ -279,7 +281,7 @@ void navStatusCallBack(const actionlib_msgs::GoalStatusArray::ConstPtr &status)
             isRobotReachedGoal = false;
             isRobotGotGoal = true;
         }
-        else if((status_id==3)||(status_id==0)||(status_id==4))
+        else if((status_id==3)||(status_id==0))
         {
             //ゴールに到達・もしくはゴールに到達して待機中。
             isRobotReachedGoal = true;
@@ -288,6 +290,9 @@ void navStatusCallBack(const actionlib_msgs::GoalStatusArray::ConstPtr &status)
         }
         else
         {
+            isRobotReachedGoal = true;
+            isRobotGotGoal = false;
+            blackList.push_back(test.front());
             
         }
         
@@ -341,7 +346,7 @@ int main(int argc, char **argv)
         cout << "combinatedPathesResult size : " << combinatedPathesResult.size() << endl;
         if(combinatedPathesResult.size()!=0)
         {
-            std::vector<geometry_msgs::PoseStamped> test=p.robotToTarget(combinatedPathesResult,robotDatas);
+            test=p.robotToTarget(combinatedPathesResult,robotDatas);
             test.front().header.stamp = p.timeStampGetter();
             cout << "test size : " << test.size() << endl;
             if(test.size()!=0)
@@ -379,9 +384,11 @@ int main(int argc, char **argv)
             }
             sleep(0.1);
         }
+        test.clear();
         isRobotReachedGoal = false;
         cout << "plan end" << endl;
     }
     END:
+    blackList.clear();
     return 0;
 }
