@@ -41,15 +41,19 @@ void plan::robotDataSetter(const exploration_msgs::FrontierArray& frontiers,cons
     int counter=0;
     ros::spinOnce();
     voronoi_planner::VoronoiPlanner VP;
-    VP.initialize(name,&globalCostmap);
+    ExpLib::PathPlanning calcVec;
+    VP.initialize(name, &globalCostmap);
     for (int i = 0; i < numberOfFrontiers; i++)
     {
         geometry_msgs::PoseStamped tmpgoal;
         tmpgoal.header.frame_id="robot1/map";
         tmpgoal.pose.position.x = frontiers.frontiers[i].point.x;
         tmpgoal.pose.position.y = frontiers.frontiers[i].point.y;
+        Eigen::Vector2d vector;
+        calcVec.getvec(stampedLocation,tmpgoal,vector);
+        tmpgoal.pose.orientation = ExpLib::Convert::vector2dToQ.(vector);
 
-        //nav_msgs::Path Path;
+            //nav_msgs::Path Path;
         std::vector<geometry_msgs::PoseStamped> foundPath;
         nav_msgs::Path foundNavPath;
         VP.makePlan(stampedLocation,tmpgoal,foundPath);
