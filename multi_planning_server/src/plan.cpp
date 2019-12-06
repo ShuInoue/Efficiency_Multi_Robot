@@ -41,7 +41,7 @@ void plan::robotDataSetter(const exploration_msgs::FrontierArray& frontiers,cons
     int counter=0;
     ros::spinOnce();
     voronoi_planner::VoronoiPlanner VP;
-    ExpLib::PathPlanning<navfn::NavfnROS> calcVec;
+    ExpLib::PathPlanning<navfn::NavfnROS> calcVec("nav_costmap","nav_planner");
     VP.initialize(name, &globalCostmap);
     for (int i = 0; i < numberOfFrontiers; i++)
     {
@@ -65,7 +65,6 @@ void plan::robotDataSetter(const exploration_msgs::FrontierArray& frontiers,cons
             {
                 foundNavPath.poses.push_back(foundPath[j]);
             }
-            tmpgoal.pose.orientation.w=1.0;
             robotData tmprobotdata = {tmpgoal, tmplocation, foundNavPath, calcPathFromLocationToTarget(tmpgoal, tmplocation,foundNavPath), ++id};
             testRobotData.push_back(tmprobotdata);
             cout << setw(15) << testRobotData[counter].goal.pose.position.x << setw(15) << testRobotData[counter].goal.pose.position.y << setw(15) << testRobotData[counter].location.pose.pose.position.x << setw(15) << testRobotData[counter].location.pose.pose.position.y << setw(15) << testRobotData[counter].pathLength << setw(15) << testRobotData[counter].memberID << endl;
