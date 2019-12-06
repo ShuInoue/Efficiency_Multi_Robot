@@ -6,7 +6,7 @@
 #include<geometry_msgs/PoseArray.h>
 #include<geometry_msgs/Pose.h>
 #include<nav_msgs/OccupancyGrid.h>
-#include<exploration_libraly/struct.hpp>
+#include<exploration_libraly/struct.h>
 #include<exploration_msgs/FrontierArray.h>
 #include<visualization_msgs/Marker.h>
 #include<iomanip>

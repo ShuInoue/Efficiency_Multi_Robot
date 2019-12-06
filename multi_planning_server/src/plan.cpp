@@ -7,6 +7,7 @@ using std::get;
 using std::setw;
 
 bool isRobotReachedGoal = false;
+bool isRobotGotGoal = false;
 
 plan::plan():tf(ros::Duration(10)),globalCostmap("global_costmap",tf)
 {
@@ -20,21 +21,21 @@ int plan::numberOfRobotGetter(void)
     return numberOfRobots;
 }
 // ここで処理する用に用意したrobotData型のインスタンスにデータをセットする関数
-void plan::robotDataSetter(const exploration_msgs::FrontierArray& frontiers,const nav_msgs::Odometry& recievedOdometry,std::vector<robotData>& testRobotData)
+void plan::robotDataSetter(const exploration_msgs::FrontierArray& frontiers,const geometry_msgs::PoseStamped& recievedOdometry,std::vector<robotData>& testRobotData)
 {
     cout << "frontiers size : " << frontiers.frontiers.size() << endl;
-    cout << "odom : " << recievedOdometry.pose.pose << endl;
+    cout << "odom : " << recievedOdometry.pose << endl;
     cout << "testRobotData size :" << testRobotData.size() << endl;
     int count=0;
     int id=0;
     avoidedTargetCounter=0;
     nav_msgs::Odometry tmplocation;
-    tmplocation.pose.pose.position.x = recievedOdometry.pose.pose.position.x;
-    tmplocation.pose.pose.position.y = recievedOdometry.pose.pose.position.y;
+    tmplocation.pose.pose.position.x = recievedOdometry.pose.position.x;
+    tmplocation.pose.pose.position.y = recievedOdometry.pose.position.y;
     geometry_msgs::PoseStamped stampedLocation;
     stampedLocation.header.frame_id="robot1/map";
-    stampedLocation.pose.position.x=recievedOdometry.pose.pose.position.x;
-    stampedLocation.pose.position.y=recievedOdometry.pose.pose.position.y;
+    stampedLocation.pose.position.x=recievedOdometry.pose.position.x;
+    stampedLocation.pose.position.y=recievedOdometry.pose.position.y;
     int counter=0;
     ros::spinOnce();
     voronoi_planner::VoronoiPlanner VP;
@@ -254,7 +255,6 @@ void firstTurn(void)
 }
 void navStatusCallBack(const actionlib_msgs::GoalStatusArray::ConstPtr &status)
 {
-    cout << "callback : " << status->status_list[0] << endl;
     int status_id = 0;
     //uint8 PENDING         = 0  
     //uint8 ACTIVE          = 1 
@@ -267,29 +267,36 @@ void navStatusCallBack(const actionlib_msgs::GoalStatusArray::ConstPtr &status)
     //uint8 RECALLED        = 8
     //uint8 LOST            = 9
 
+    // action_msgs::GoalStatus::PENDING <- これでuintの値になってる
+
     if (!status->status_list.empty())
     {
         actionlib_msgs::GoalStatus goalStatus = status->status_list[0];
         status_id = goalStatus.status;
+        if(status_id==1)
+        {
+            //移動中
+            isRobotReachedGoal = false;
+            isRobotGotGoal = true;
+        }
+        else if((status_id==3)||(status_id==0)||(status_id==4))
+        {
+            //ゴールに到達・もしくはゴールに到達して待機中。
+            isRobotReachedGoal = true;
+            isRobotGotGoal = false;
+            cout << "flag is true." << endl;
+        }
+        else
+        {
+            
+        }
+        
+        cout << "status_id : " << status_id << endl;
     }
     else
     {
-        
-    }
-    cout << "status_id : " << status_id << endl;
-    if(status_id==1)
-    {
-        //移動中
-        isRobotReachedGoal = false;
-    }
 
-    if((status_id==3)||(status_id==0)||(status_id==4))
-    {
-        //ゴールに到達・もしくはゴールに到達して待機中。
-        isRobotReachedGoal = true;
-        cout << "flag is true." << endl;
     }
-
 }
 
 
@@ -300,7 +307,7 @@ int main(int argc, char **argv)
     plan p;
     ros::Time planStartTime=ros::Time::now();
     ExpLib::Struct::subStruct<exploration_msgs::FrontierArray> frontierCoordinatesSub("/extraction_target",1);
-    ExpLib::Struct::subStruct<nav_msgs::Odometry> odometrySub("/robot1/odom",1);
+    ExpLib::Struct::subStruct<geometry_msgs::PoseStamped> odometrySub("/robot1/pose",1);
     //ExpLib::Struct::subStruct<actionlib_msgs::GoalStatus> goalStatusSub("/robot1/move_base/status",1,&plan::navStatusCallBack ,p);
     ExpLib::Struct::pubStruct<geometry_msgs::PoseStamped> goalPosePub("/robot1/move_base_simple/goal",1);
     ros::NodeHandle nh2;
@@ -353,18 +360,27 @@ int main(int argc, char **argv)
             cout << "exploration time = " << (ros::Time::now() - planStartTime).toSec() << "[s]" << endl;
             continue;
         }
-        cout << "plan end" << endl;
-        sleep(0.5);
-        
+        while(isRobotGotGoal == false && ros::ok())
+        {
+            queue.callOne(ros::WallDuration(0.3));
+            if(isRobotGotGoal == true)
+            {
+                break;
+            }
+            sleep(0.1);
+        }
+        isRobotGotGoal = false;
         while(isRobotReachedGoal == false && ros::ok())
         {
-            queue.callOne(ros::WallDuration(0.1));
+            queue.callOne(ros::WallDuration(0.3));
             if(isRobotReachedGoal == true)
             {
                 break;
             }
+            sleep(0.1);
         }
         isRobotReachedGoal = false;
+        cout << "plan end" << endl;
     }
     END:
     return 0;

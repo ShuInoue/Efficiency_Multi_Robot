@@ -15,8 +15,8 @@
 #include<iostream>
 #include<functional>
 #include<exploration_msgs/FrontierArray.h>
-#include<exploration_libraly/struct.hpp>
-#include<exploration_libraly/convert.hpp>
+#include<exploration_libraly/struct.h>
+#include<exploration_libraly/convert.h>
 #include<multi_planning_server/voronoi_map.hpp>
 #include<actionlib_msgs/GoalStatus.h>
 #include<move_base_msgs/MoveBaseAction.h>
@@ -81,7 +81,7 @@ class plan
     //bool isRobotReachedGoal;
     int numberOfRobotGetter(void);
     void recievedFrontierCoordinatesSetter(const exploration_msgs::FrontierArray& recievedData);
-    void robotDataSetter(const exploration_msgs::FrontierArray& frontiers, const nav_msgs::Odometry& recievedOdometry,std::vector<robotData>& testRobotData);
+    void robotDataSetter(const exploration_msgs::FrontierArray& frontiers, const geometry_msgs::PoseStamped& recievedOdometry,std::vector<robotData>& testRobotData);
     double calcPathFromLocationToTarget(geometry_msgs::PoseStamped Goal, nav_msgs::Odometry Location, nav_msgs::Path path);
     ros::Time timeStampGetter(void);
     std::vector<combinatedPaths_t> combinatedPaths(std::vector<std::vector<robotData>>robotDatas);

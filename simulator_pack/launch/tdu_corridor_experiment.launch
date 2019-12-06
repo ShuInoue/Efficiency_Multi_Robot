@@ -11,8 +11,8 @@
         <remap from="frontier" to="/extraction_target"/>
         <remap from="map" to="$(arg robot_name)/map_continuity"/>
         <param name="cluster_tolerance" value="0.15"/>
-        <param name="filter_square_diameter" value="0.55"/>
-        <param name="min_cluster_size" value="10"/>
+        <param name="filter_square_diameter" value="0.75"/>
+        <param name="min_cluster_size" value="30"/>
         <param name="max_cluster_size" value="15000"/>
     </node>
 
