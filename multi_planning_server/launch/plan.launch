@@ -10,11 +10,19 @@
         <param name="namespace" value="$(arg robot_name)"/>
         <rosparam file="$(find multi_planning_server)/params/costmap_common_params.yaml" command="load" ns="global_costmap"/>
 		<rosparam file="$(find multi_planning_server)/params/global_costmap_params.yaml" command="load" ns="global_costmap"/>
+        <rosparam file="$(find multi_planning_server)/params/costmap_common_params.yaml" command="load" ns="nav_costmap"/>
+        <rosparam file="$(find multi_planning_server)/params/global_costmap_params.yaml" command="load" ns="nav_costmap"/>
+        <rosparam file="$(find multi_planning_server)/params/navfnROS.yaml" command="load" ns="nav_planner"/>
+
+
         <param name="global_frame" value="$(arg global_frame_id)"/>
         <param name="robot_base_frame" value="$(arg base_frame_id)"/>
         <!-- <rosparam file="$(find exploration)/param/path_planner_params.yaml" command="load"/> -->
         <param name="global_costmap/global_frame" value="robot1/map"/>
         <param name="global_costmap/robot_base_frame" value="robot1/base_footprint"/>
+        <param name="nav_costmap/global_frame" value="robot1/map"/>
+        <param name="nav_costmap/robot_base_frame" value="robot1/base_footprint"/>
+
         <remap from="map" to="map_continuity"/>
     </node>
 </group>
@@ -23,11 +31,17 @@
         <param name="namespace" value="$(arg robot_name)"/>
         <rosparam file="$(find multi_planning_server)/params/costmap_common_params.yaml" command="load" ns="global_costmap"/>
         <rosparam file="$(find multi_planning_server)/params/global_costmap_params.yaml" command="load" ns="global_costmap"/>
+        <rosparam file="$(find multi_planning_server)/params/costmap_common_params.yaml" command="load" ns="nav_costmap"/>
+        <rosparam file="$(find multi_planning_server)/params/global_costmap_params.yaml" command="load" ns="nav_costmap"/>
+        <rosparam file="$(find multi_planning_server)/params/navfnROS.yaml" command="load" ns="nav_planner"/>
+
         <param name="global_frame" value="$(arg global_frame_id)"/>
         <param name="robot_base_frame" value="$(arg base_frame_id)"/>
         <!-- <rosparam file="$(find exploration)/param/path_planner_params.yaml" command="load"/> -->
         <param name="global_costmap/global_frame" value="robot1/map"/>
         <param name="global_costmap/robot_base_frame" value="robot1/base_footprint"/>
+        <param name="nav_costmap/global_frame" value="robot1/map"/>
+        <param name="nav_costmap/robot_base_frame" value="robot1/base_footprint"/>
         <remap from="map" to="map_continuity"/>
     </node>
 </group>

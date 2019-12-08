@@ -41,7 +41,7 @@ void plan::robotDataSetter(const exploration_msgs::FrontierArray& frontiers,cons
     int counter=0;
     ros::spinOnce();
     voronoi_planner::VoronoiPlanner VP;
-    ExpLib::PathPlanning<navfn::NavfnROS> calcVec;
+    ExpLib::PathPlanning<navfn::NavfnROS> calcVec("nav_costmap","nav_planner");
     VP.initialize(name, &globalCostmap);
     for (int i = 0; i < numberOfFrontiers; i++)
     {
@@ -65,7 +65,6 @@ void plan::robotDataSetter(const exploration_msgs::FrontierArray& frontiers,cons
             {
                 foundNavPath.poses.push_back(foundPath[j]);
             }
-            tmpgoal.pose.orientation.w=1.0;
             robotData tmprobotdata = {tmpgoal, tmplocation, foundNavPath, calcPathFromLocationToTarget(tmpgoal, tmplocation,foundNavPath), ++id};
             testRobotData.push_back(tmprobotdata);
             cout << setw(15) << testRobotData[counter].goal.pose.position.x << setw(15) << testRobotData[counter].goal.pose.position.y << setw(15) << testRobotData[counter].location.pose.pose.position.x << setw(15) << testRobotData[counter].location.pose.pose.position.y << setw(15) << testRobotData[counter].pathLength << setw(15) << testRobotData[counter].memberID << endl;
@@ -262,6 +261,7 @@ void firstTurn(void)
 void navStatusCallBack1(const actionlib_msgs::GoalStatusArray::ConstPtr &status)
 {
     int status_id = 0;
+    cout << "status id : " << status_id <<  endl;
     if (!status->status_list.empty())
     {
         actionlib_msgs::GoalStatus goalStatus = status->status_list[0];
@@ -329,6 +329,7 @@ void navStatusCallBack2(const actionlib_msgs::GoalStatusArray::ConstPtr &status)
             isRobotReachedGoal = true;
             isRobotGotGoal = false;
             blackList.push_back(test.front());
+            cout << "black list : " << blackList.front() << endl;
             
         }
         
@@ -351,14 +352,15 @@ int main(int argc, char **argv)
     ExpLib::Struct::subStruct<geometry_msgs::PoseStamped> odometrySub("/robot1/pose",1);
     //ExpLib::Struct::subStruct<actionlib_msgs::GoalStatus> goalStatusSub("/robot1/move_base/status",1,&plan::navStatusCallBack ,p);
     ExpLib::Struct::pubStruct<geometry_msgs::PoseStamped> goalPosePub("/robot1/move_base_simple/goal",1);
+    ros::NodeHandle nh1;
     ros::NodeHandle nh2;
     ros::Subscriber move_base_status_sub1;
     ros::Subscriber move_base_status_sub2;
     ros::CallbackQueue queue1;
     ros::CallbackQueue queue2;
-    nh2.setCallbackQueue(&queue1);
+    nh1.setCallbackQueue(&queue1);
     nh2.setCallbackQueue(&queue2);
-    move_base_status_sub1 = nh2.subscribe<actionlib_msgs::GoalStatusArray>("/robot1/move_base/status", 1, &navStatusCallBack1);
+    move_base_status_sub1 = nh1.subscribe<actionlib_msgs::GoalStatusArray>("/robot1/move_base/status", 1, &navStatusCallBack1);
     move_base_status_sub2 = nh2.subscribe<actionlib_msgs::GoalStatusArray>("/robot1/move_base/status", 1, &navStatusCallBack2);
 
     firstTurn();
@@ -408,6 +410,7 @@ int main(int argc, char **argv)
         }
         while(isRobotGotGoal == false && ros::ok())
         {
+            cout << "loop1" << endl;
             queue1.callOne(ros::WallDuration(0.3));
             if(isRobotGotGoal == true)
             {
@@ -418,6 +421,7 @@ int main(int argc, char **argv)
         isRobotGotGoal = false;
         while(isRobotReachedGoal == false && ros::ok())
         {
+            cout << "loop2" << endl;
             queue2.callOne(ros::WallDuration(0.3));
             if(isRobotReachedGoal == true)
             {
