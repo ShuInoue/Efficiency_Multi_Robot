@@ -59,7 +59,7 @@ void plan::robotDataSetter(const exploration_msgs::FrontierArray& frontiers,cons
         VP.makePlan(stampedLocation,tmpgoal,foundPath);
         cout << "foundPath size : " << foundPath.size() << endl;
         //if(avoidTargetInRobot(tmplocation,tmpgoal))
-        if(avoidTargetInRobot(tmplocation,tmpgoal) && foundPath.size()!=0)
+        if(avoidTargetInRobot(tmplocation,tmpgoal) && foundPath.size()!=0 && isTargetInBlackList(blackList,tmpgoal))
         {
             for(int j=0;j<foundPath.size();j++)
             {
@@ -236,6 +236,34 @@ bool plan::avoidTargetInRobot(nav_msgs::Odometry& nowLocation,geometry_msgs::Pos
         cout << "true" << endl;
         return true;
     }
+}
+
+bool plan::isTargetInBlackList(const std::vector<geometry_msgs::PoseStamped> &blackList, const geometry_msgs::PoseStamped &goalPose)
+{
+    double distanceBetweenNowTargetAndBlackListTarget;
+    cout << "blackList size : " << blackList.size() << endl;
+    if(blackList.size() == 0)
+    {
+        return true;
+    }
+    else
+    {
+        for(int i=0; i<blackList.size();i++)
+        {
+            distanceBetweenNowTargetAndBlackListTarget = getDistance(blackList[i].pose.position.x,blackList[i].pose.position.y,goalPose.pose.position.x,goalPose.pose.position.y);
+            if(distanceBetweenNowTargetAndBlackListTarget < 0.5)
+            {
+                cout << "black list false" << endl;
+                return false;
+            }
+            else
+            {
+                cout << "black list true" << endl;
+                return true;
+            }
+        }
+    }
+
 }
 
 ros::Time plan::timeStampGetter(void)

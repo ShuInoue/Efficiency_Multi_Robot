@@ -73,6 +73,7 @@ class plan
     void foreach_comb(int n, int k, std::function<void(int *)> f);
     double pathlengthFoundwithID(std::vector<std::vector<robotData>> &robotDataYouWantToKnowPathlength, std::vector<int> chosenID);
     bool avoidTargetInRobot(nav_msgs::Odometry& nowLocation,geometry_msgs::PoseStamped& candidateTarget);
+    bool isTargetInBlackList(const std::vector<geometry_msgs::PoseStamped> &blackList, const geometry_msgs::PoseStamped &tmpgoal);
     //void navStatusCallBack(const actionlib_msgs::GoalStatusArray::ConstPtr &status);
 
 
