@@ -468,7 +468,7 @@ int main(int argc, char **argv)
             {
                 break;
             }            
-            sleep(0.1);
+            usleep(1.0 * 100000);
         }
         test.clear();
         isRobotReachedGoal = false;
