@@ -447,7 +447,7 @@ int main(int argc, char **argv)
             {
                 break;
             }
-             else if(timeOutCounter>1000)
+            else if(timeOutCounter>1000)
             {
                 timeOutFlag = true;
                 cout << "timeout" << endl;
@@ -457,7 +457,7 @@ int main(int argc, char **argv)
             {
             }
             timeOutCounter++;
-            sleep(0.1);
+            usleep(1.0*100000);
         }
         isRobotGotGoal = false;
         while(isRobotReachedGoal == false && ros::ok() && timeOutFlag == false)
