@@ -354,6 +354,7 @@ void navStatusCallBack2(const actionlib_msgs::GoalStatusArray::ConstPtr &status)
         }
         else
         {
+            cout << "status id : " << status_id << endl; 
             isRobotReachedGoal = true;
             isRobotGotGoal = false;
             blackList.push_back(test.front());
@@ -437,7 +438,8 @@ int main(int argc, char **argv)
             continue;
         }
         int timeOutCounter=0;
-        while(isRobotGotGoal == false && timeOutCounter<=100 && ros::ok())
+        bool timeOutFlag = false;
+        while(isRobotGotGoal == false && ros::ok())
         {
             cout << "loop1" << endl;
             queue1.callOne(ros::WallDuration(0.3));
@@ -447,6 +449,8 @@ int main(int argc, char **argv)
             }
              else if(timeOutCounter>1000)
             {
+                timeOutFlag = true;
+                cout << "timeout" << endl;
                 break;
             }
             else
@@ -456,7 +460,7 @@ int main(int argc, char **argv)
             sleep(0.1);
         }
         isRobotGotGoal = false;
-        while(isRobotReachedGoal == false && ros::ok())
+        while(isRobotReachedGoal == false && ros::ok() && timeOutFlag == false)
         {
             cout << "loop2" << endl;
             queue2.callOne(ros::WallDuration(0.3));
