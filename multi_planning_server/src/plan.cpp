@@ -437,7 +437,6 @@ int main(int argc, char **argv)
             cout << "exploration time = " << (ros::Time::now() - planStartTime).toSec() << "[s]" << endl;
             continue;
         }
-        int timeOutCounter=0;
         bool timeOutFlag = false;
         while(isRobotGotGoal == false && ros::ok())
         {
@@ -447,20 +446,13 @@ int main(int argc, char **argv)
             {
                 break;
             }
-            else if(timeOutCounter>1000)
-            {
-                timeOutFlag = true;
-                cout << "timeout" << endl;
-                break;
-            }
             else
             {
             }
-            timeOutCounter++;
             usleep(1.0*100000);
         }
         isRobotGotGoal = false;
-        while(isRobotReachedGoal == false && ros::ok() && timeOutFlag == false)
+        while(isRobotReachedGoal == false && ros::ok())
         {
             cout << "loop2" << endl;
             queue2.callOne(ros::WallDuration(0.3));
