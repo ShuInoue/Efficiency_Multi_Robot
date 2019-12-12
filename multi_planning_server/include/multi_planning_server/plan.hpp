@@ -18,6 +18,16 @@
 #include<exploration_libraly/struct.hpp>
 #include<exploration_libraly/convert.hpp>
 #include<multi_planning_server/voronoi_map.hpp>
+<<<<<<< Updated upstream
+=======
+#include<actionlib_msgs/GoalStatus.h>
+#include<move_base_msgs/MoveBaseAction.h>
+#include<actionlib_msgs/GoalStatusArray.h>
+#include<actionlib/client/simple_action_client.h>
+#include<voronoi_planner/planner_core.h>
+#include<navfn/navfn_ros.h>
+#include<std_msgs/Int8.h>
+>>>>>>> Stashed changes
 
 struct robotData
 {

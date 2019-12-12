@@ -249,16 +249,35 @@ int main(int argc, char **argv)
     ExpLib::Struct::subStruct<exploration_msgs::FrontierArray> frontierCoordinatesSub("/extraction_target",1);
     ExpLib::Struct::subStruct<nav_msgs::Odometry> odometrySub("/robot1/odom",1);
     ExpLib::Struct::pubStruct<geometry_msgs::PoseStamped> goalPosePub("/robot1/move_base_simple/goal",1);
+<<<<<<< Updated upstream
+=======
+    ExpLib::Struct::pubStruct<std_msgs::Int8> checkTimeAndAreaPub("/timing_check",1);
+    ros::NodeHandle nh1;
+    ros::NodeHandle nh2;
+    ros::Subscriber move_base_status_sub1;
+    ros::Subscriber move_base_status_sub2;
+    ros::CallbackQueue queue1;
+    ros::CallbackQueue queue2;
+    nh1.setCallbackQueue(&queue1);
+    nh2.setCallbackQueue(&queue2);
+    move_base_status_sub1 = nh1.subscribe<actionlib_msgs::GoalStatusArray>("/robot1/move_base/status", 1, &navStatusCallBack1);
+    move_base_status_sub2 = nh2.subscribe<actionlib_msgs::GoalStatusArray>("/robot1/move_base/status", 1, &navStatusCallBack2);
+    std_msgs::Int8 timingStatus;
+
+>>>>>>> Stashed changes
     firstTurn();
     while (ros::ok())
     {
         cout << "plan start" << endl;
+        timingStatus.data = 1;
+        checkTimeAndAreaPub.pub.publish(timingStatus);
+
         frontierCoordinatesSub.q.callOne(ros::WallDuration(10.0));
         odometrySub.q.callOne(ros::WallDuration(1.0));
-        if(frontierCoordinatesSub.data.frontiers.size() == 0)
-        {
-            continue;
-        }
+        // if(frontierCoordinatesSub.data.frontiers.size() == 0)
+        // {
+        //     continue;
+        // }
         p.recievedFrontierCoordinatesSetter(frontierCoordinatesSub.data);
         std::vector<std::vector<robotData>> robotDatas;
         std::vector<combinatedPaths_t> combinatedPathesResult;
@@ -290,11 +309,18 @@ int main(int argc, char **argv)
         else
         {
             cout << "exploration time = " << (ros::Time::now() - planStartTime).toSec() << "[s]" << endl;
-            continue;
+            goto END;
         }
         cout << "plan end" << endl;
         sleep(p.waitTimeByDistance);
     }
+<<<<<<< Updated upstream
     
+=======
+    END:
+    timingStatus.data = 2;
+    checkTimeAndAreaPub.pub.publish(timingStatus);
+    blackList.clear();
+>>>>>>> Stashed changes
     return 0;
 }
