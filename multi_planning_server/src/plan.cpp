@@ -348,6 +348,10 @@ int main(int argc, char **argv)
     ros::init(argc, argv, "plan");
     plan p;
     ros::Time planStartTime=ros::Time::now();
+    ExpLib::Struct::pubStruct<std_msgs::Int8> checkTimeAndAreaTimingPub("/timing_check",1);
+    std_msgs::Int8 timingStatus;
+    timingStatus.data = 1;
+    checkTimeAndAreaTimingPub.pub.publish(timingStatus);
     ExpLib::Struct::subStruct<exploration_msgs::FrontierArray> frontierCoordinatesSub("/extraction_target",1);
     ExpLib::Struct::subStruct<geometry_msgs::PoseStamped> odometrySub("/robot1/pose",1);
     //ExpLib::Struct::subStruct<actionlib_msgs::GoalStatus> goalStatusSub("/robot1/move_base/status",1,&plan::navStatusCallBack ,p);
@@ -362,17 +366,22 @@ int main(int argc, char **argv)
     nh2.setCallbackQueue(&queue2);
     move_base_status_sub1 = nh1.subscribe<actionlib_msgs::GoalStatusArray>("/robot1/move_base/status", 1, &navStatusCallBack1);
     move_base_status_sub2 = nh2.subscribe<actionlib_msgs::GoalStatusArray>("/robot1/move_base/status", 1, &navStatusCallBack2);
-
+    sleep(1.0);
+    timingStatus.data = 1;
+    checkTimeAndAreaTimingPub.pub.publish(timingStatus);
+    sleep(1.0);
+    timingStatus.data = 2;
+    checkTimeAndAreaTimingPub.pub.publish(timingStatus);
     firstTurn();
     while (ros::ok())
     {
         cout << "plan start" << endl;
         frontierCoordinatesSub.q.callOne(ros::WallDuration(10.0));
         odometrySub.q.callOne(ros::WallDuration(1.0));
-        if(frontierCoordinatesSub.data.frontiers.size() == 0)
-        {
-            continue;
-        }
+        // if(frontierCoordinatesSub.data.frontiers.size() == 0)
+        // {
+        //     continue;
+        // }
         p.recievedFrontierCoordinatesSetter(frontierCoordinatesSub.data);
         std::vector<std::vector<robotData>> robotDatas;
         std::vector<combinatedPaths_t> combinatedPathesResult;
@@ -406,7 +415,7 @@ int main(int argc, char **argv)
         else
         {
             cout << "exploration time = " << (ros::Time::now() - planStartTime).toSec() << "[s]" << endl;
-            continue;
+            goto END;
         }
         while(isRobotGotGoal == false && ros::ok())
         {
@@ -434,6 +443,9 @@ int main(int argc, char **argv)
         cout << "plan end" << endl;
     }
     END:
+    timingStatus.data = 3;
+    checkTimeAndAreaTimingPub.pub.publish(timingStatus);
     blackList.clear();
+    cout  << " progam shutdown." << endl;
     return 0;
 }

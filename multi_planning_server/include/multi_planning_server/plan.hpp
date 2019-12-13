@@ -25,6 +25,7 @@
 #include<actionlib/client/simple_action_client.h>
 #include<voronoi_planner/planner_core.h>
 #include<navfn/navfn_ros.h>
+#include<std_msgs/Int8.h>
 
 struct robotData
 {

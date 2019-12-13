@@ -27,7 +27,7 @@ ros::Time process;
 
 
 void export_data(){
-	std::ofstream ofs("export_data.csv",std::ios::app);
+	std::ofstream ofs("/home/ros/export_data/export_data.csv", std::ios::app);
 	//ofs << odom_x << "," << odom_y << "," << explored_cell << std::endl;
 	ros::Duration sec = process - start;
 	double time = sec.toSec();;
@@ -82,7 +82,7 @@ int main(int argc, char** argv){
    	timer = time(NULL);
    	local = localtime(&timer);
 
-	std::ofstream ofs("export_data.csv",std::ios::app);
+	std::ofstream ofs("/home/ros/export_data/export_data.csv",std::ios::app);
 	
 	ofs << local->tm_year+1900 << "/" << local->tm_mon+1 << "/" << local->tm_mday << " " << local->tm_hour << ":" << local->tm_min << ":" << local->tm_sec << std::endl;
 	//ofs << "odom_x,odom_y,探査済み面積[m*m]" << std::endl;
@@ -90,11 +90,13 @@ int main(int argc, char** argv){
 
 
 	//ros::Rate rate(0.5);
-
-	while(timing_int == 1){
+	std::cout << "test1" << std::endl;
+	while(timing_int != 1){
 		timing_queue.callOne(ros::WallDuration(0.1));
 	}
+	std::cout << "test2" << std::endl;
 	start = ros::Time::now();
+	std::cout << "test3" << std::endl;
 	while(ros::ok() && timing_queue.callOne() != 2){
 		//odom_data_queue.callOne(ros::WallDuration(1));
 		process = ros::Time::now();
@@ -103,6 +105,7 @@ int main(int argc, char** argv){
 		timing_queue.callOne();
 		//rate.sleep();
 	}
+	std::cout << "test4" << std::endl;
 
 	ofs << "" << std::endl;
 
