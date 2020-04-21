@@ -27,11 +27,12 @@ ros::Time process;
 
 
 void export_data(){
-	std::ofstream ofs("/home/ros/export_data/export_data.csv", std::ios::app);
+	std::ofstream ofs("/home/shu/export_data/export_data.csv", std::ios::app);
 	//ofs << odom_x << "," << odom_y << "," << explored_cell << std::endl;
 	ros::Duration sec = process - start;
 	double time = sec.toSec();;
-	ofs << time << "," << explored_cell << std::endl;
+	double nowTime = ros::Time::now().toSec();
+	ofs << nowTime << "," << time << "," << explored_cell << std::endl;
 }
 
 void map_data(const nav_msgs::OccupancyGrid::ConstPtr& map_data){
@@ -82,11 +83,11 @@ int main(int argc, char** argv){
    	timer = time(NULL);
    	local = localtime(&timer);
 
-	std::ofstream ofs("/home/ros/export_data/export_data.csv",std::ios::app);
+	std::ofstream ofs("/home/shu/export_data/export_data.csv",std::ios::app);
 	
 	ofs << local->tm_year+1900 << "/" << local->tm_mon+1 << "/" << local->tm_mday << " " << local->tm_hour << ":" << local->tm_min << ":" << local->tm_sec << std::endl;
 	//ofs << "odom_x,odom_y,探査済み面積[m*m]" << std::endl;
-	ofs << "time,探査済み面積[m*m]" << std::endl;
+	ofs << "now time,time,探査済み面積[m*m]" << std::endl;
 
 
 	//ros::Rate rate(0.5);

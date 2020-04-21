@@ -348,6 +348,8 @@ int main(int argc, char **argv)
     ros::init(argc, argv, "plan");
     plan p;
     ros::Time planStartTime=ros::Time::now();
+    std::ofstream ofs("/home/shu/compare_csv/compare.csv");
+    ofs << "now time,calculation time" << endl;
     ExpLib::Struct::pubStruct<std_msgs::Int8> checkTimeAndAreaTimingPub("/timing_check",1);
     std_msgs::Int8 timingStatus;
     timingStatus.data = 1;
@@ -385,6 +387,7 @@ int main(int argc, char **argv)
         p.recievedFrontierCoordinatesSetter(frontierCoordinatesSub.data);
         std::vector<std::vector<robotData>> robotDatas;
         std::vector<combinatedPaths_t> combinatedPathesResult;
+        ros::Time calculationTime = ros::Time::now();
         for(int i=0;i<p.numberOfRobotGetter();i++)
         {
             std::vector<robotData> tmpRobotData;
@@ -404,6 +407,11 @@ int main(int argc, char **argv)
             if(test.size()!=0)
             {
                 cout << "test pose : " << test.front() << endl;
+                double doubleCalculationTime = (ros::Time::now() - calculationTime).toSec();
+                double nowTime = ros::Time::now().toSec();
+                cout << "calc time = " << doubleCalculationTime << endl;
+                cout << "now time = " << nowTime << endl;
+                ofs << nowTime << "," << doubleCalculationTime << endl;
                 goalPosePub.pub.publish(test.front());//robotの個数分のサイズの配列になっている
             }
             else

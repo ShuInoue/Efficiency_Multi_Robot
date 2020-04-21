@@ -26,6 +26,7 @@
 #include<voronoi_planner/planner_core.h>
 #include<navfn/navfn_ros.h>
 #include<std_msgs/Int8.h>
+#include<fstream>
 
 struct robotData
 {
