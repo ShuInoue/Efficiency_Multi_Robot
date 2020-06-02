@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<launch>
+<arg name="robot_name" default="robot1"/>
+
+    <node pkg="exploration_support" type="exploration_support" name="exploration_support">
+        <remap from="map" to="$(arg robot_name)/map"/>
+        <remap from="map_continuity" to="$(arg robot_name)/map_continuity"/>
+        <remap from="costmap_continuity" to="$(arg robot_name)/costmap_continuity"/>
+        <param name="min_cluster_size" value="10"/>
+    </node>
+
+    <node pkg="exploration_support" type="frontier_detection" name="frontier_detection">
+        <remap from="frontier" to="extraction_target"/>
+        <remap from="map" to="$(arg robot_name)/map"/>
+        <param name="cluster_tolerance" value="0.15"/>
+        <param name="filter_square_diameter" value="0.55"/>
+        <param name="min_cluster_size" value="10"/>
+        <param name="max_cluster_size" value="15000"/>
+    </node>
+
+    <node pkg="exploration_support" type="visualization" name="visualization">
+        <remap from="frontier" to="extraction_target"/>
+    </node>
+
+    <include file="$(find multi_planning_server)/launch/plan.launch"/>
+
+</launch>

@@ -7,8 +7,11 @@ using std::get;
 using std::setw;
 
 bool isRobotReachedGoal = false;
+bool isRobotGotGoal = false;
+std::vector<geometry_msgs::PoseStamped> test;
+std::vector<geometry_msgs::PoseStamped> blackList;
 
-plan::plan():tf(ros::Duration(10)),globalCostmap("global_costmap",tf)
+plan::plan() : tf(ros::Duration(10)), globalCostmap("global_costmap", tf)
 {
     ros::NodeHandle nh("~");
     //nh.getParam("number_of_robots",numberOfRobots);
@@ -20,42 +23,48 @@ int plan::numberOfRobotGetter(void)
     return numberOfRobots;
 }
 // ここで処理する用に用意したrobotData型のインスタンスにデータをセットする関数
-void plan::robotDataSetter(const exploration_msgs::FrontierArray& frontiers,const nav_msgs::Odometry& recievedOdometry,std::vector<robotData>& testRobotData)
+void plan::robotDataSetter(const exploration_msgs::FrontierArray& frontiers,const geometry_msgs::PoseStamped& recievedOdometry,std::vector<robotData>& testRobotData)
 {
     cout << "frontiers size : " << frontiers.frontiers.size() << endl;
-    cout << "odom : " << recievedOdometry.pose.pose << endl;
+    cout << "odom : " << recievedOdometry.pose << endl;
     cout << "testRobotData size :" << testRobotData.size() << endl;
     int count=0;
     int id=0;
     avoidedTargetCounter=0;
     nav_msgs::Odometry tmplocation;
-    tmplocation.pose.pose.position.x = recievedOdometry.pose.pose.position.x;
-    tmplocation.pose.pose.position.y = recievedOdometry.pose.pose.position.y;
+    tmplocation.pose.pose.position.x = recievedOdometry.pose.position.x;
+    tmplocation.pose.pose.position.y = recievedOdometry.pose.position.y;
     geometry_msgs::PoseStamped stampedLocation;
     stampedLocation.header.frame_id="robot1/map";
-    stampedLocation.pose.position.x=recievedOdometry.pose.pose.position.x;
-    stampedLocation.pose.position.y=recievedOdometry.pose.pose.position.y;
+    stampedLocation.pose.position.x=recievedOdometry.pose.position.x;
+    stampedLocation.pose.position.y=recievedOdometry.pose.position.y;
     int counter=0;
+    ros::spinOnce();
+    voronoi_planner::VoronoiPlanner VP;
+    ExpLib::PathPlanning<navfn::NavfnROS> calcVec("nav_costmap","nav_planner");
+    VP.initialize(name, &globalCostmap);
     for (int i = 0; i < numberOfFrontiers; i++)
     {
         geometry_msgs::PoseStamped tmpgoal;
         tmpgoal.header.frame_id="robot1/map";
         tmpgoal.pose.position.x = frontiers.frontiers[i].point.x;
         tmpgoal.pose.position.y = frontiers.frontiers[i].point.y;
+        Eigen::Vector2d vector;
+        calcVec.getVec(stampedLocation,tmpgoal,vector);
+        tmpgoal.pose.orientation = ExpLib::Convert::vector2dToQ(vector);
 
         //nav_msgs::Path Path;
         std::vector<geometry_msgs::PoseStamped> foundPath;
         nav_msgs::Path foundNavPath;
-        vp.makePlan(stampedLocation,tmpgoal,foundPath);
+        VP.makePlan(stampedLocation,tmpgoal,foundPath);
         cout << "foundPath size : " << foundPath.size() << endl;
         //if(avoidTargetInRobot(tmplocation,tmpgoal))
-        if(avoidTargetInRobot(tmplocation,tmpgoal) && foundPath.size()!=0)
+        if(avoidTargetInRobot(tmplocation,tmpgoal) && foundPath.size()!=0 && isTargetInBlackList(blackList,tmpgoal))
         {
             for(int j=0;j<foundPath.size();j++)
             {
                 foundNavPath.poses.push_back(foundPath[j]);
             }
-            tmpgoal.pose.orientation.w=1.0;
             robotData tmprobotdata = {tmpgoal, tmplocation, foundNavPath, calcPathFromLocationToTarget(tmpgoal, tmplocation,foundNavPath), ++id};
             testRobotData.push_back(tmprobotdata);
             cout << setw(15) << testRobotData[counter].goal.pose.position.x << setw(15) << testRobotData[counter].goal.pose.position.y << setw(15) << testRobotData[counter].location.pose.pose.position.x << setw(15) << testRobotData[counter].location.pose.pose.position.y << setw(15) << testRobotData[counter].pathLength << setw(15) << testRobotData[counter].memberID << endl;
@@ -208,7 +217,7 @@ void plan::recievedFrontierCoordinatesSetter(const exploration_msgs::FrontierArr
     for(int i=0;i<recievedData.frontiers.size();i++)
     {
         recievedFrontierCoordinates.push_back(recievedData.frontiers[i].point);
-        extractionTimeStamp = recievedData.frontiers[i].header.stamp;
+        extractionTimeStamp = recievedData.header.stamp;
     }
     numberOfFrontiers = recievedData.frontiers.size();
 }
@@ -227,6 +236,34 @@ bool plan::avoidTargetInRobot(nav_msgs::Odometry& nowLocation,geometry_msgs::Pos
         cout << "true" << endl;
         return true;
     }
+}
+
+bool plan::isTargetInBlackList(const std::vector<geometry_msgs::PoseStamped> &blackList, const geometry_msgs::PoseStamped &goalPose)
+{
+    double distanceBetweenNowTargetAndBlackListTarget;
+    cout << "blackList size : " << blackList.size() << endl;
+    if(blackList.size() == 0)
+    {
+        return true;
+    }
+    else
+    {
+        for(int i=0; i<blackList.size();i++)
+        {
+            distanceBetweenNowTargetAndBlackListTarget = getDistance(blackList[i].pose.position.x,blackList[i].pose.position.y,goalPose.pose.position.x,goalPose.pose.position.y);
+            if(distanceBetweenNowTargetAndBlackListTarget < 0.5)
+            {
+                cout << "black list false" << endl;
+                return false;
+            }
+            else
+            {
+                cout << "black list true" << endl;
+                return true;
+            }
+        }
+    }
+
 }
 
 ros::Time plan::timeStampGetter(void)
@@ -249,9 +286,41 @@ void firstTurn(void)
     }
 
 }
-void navStatusCallBack(const actionlib_msgs::GoalStatusArray::ConstPtr &status)
+void navStatusCallBack1(const actionlib_msgs::GoalStatusArray::ConstPtr &status)
 {
-    cout << "callback : " << status->status_list[0] << endl;
+    int status_id = 0;
+    cout << "status id : " << status_id <<  endl;
+    if (!status->status_list.empty())
+    {
+        actionlib_msgs::GoalStatus goalStatus = status->status_list[0];
+        status_id = goalStatus.status;
+        if (status_id == 1)
+        {
+            //移動中
+            isRobotReachedGoal = false;
+            isRobotGotGoal = true;
+        }
+        else if ((status_id == 3) || (status_id == 0))
+        {
+            //ゴールに到達・もしくはゴールに到達して待機中。
+            isRobotReachedGoal = true;
+            isRobotGotGoal = false;
+            cout << "flag is true." << endl;
+        }
+        else
+        {
+            isRobotReachedGoal = true;
+            isRobotGotGoal = false;
+        }
+
+        cout << "status_id : " << status_id << endl;
+    }
+    else
+    {
+    }
+}
+void navStatusCallBack2(const actionlib_msgs::GoalStatusArray::ConstPtr &status)
+{
     int status_id = 0;
     //uint8 PENDING         = 0  
     //uint8 ACTIVE          = 1 
@@ -264,29 +333,41 @@ void navStatusCallBack(const actionlib_msgs::GoalStatusArray::ConstPtr &status)
     //uint8 RECALLED        = 8
     //uint8 LOST            = 9
 
+    // action_msgs::GoalStatus::PENDING <- これでuintの値になってる
+
     if (!status->status_list.empty())
     {
         actionlib_msgs::GoalStatus goalStatus = status->status_list[0];
         status_id = goalStatus.status;
+        if(status_id==1)
+        {
+            //移動中
+            isRobotReachedGoal = false;
+            isRobotGotGoal = true;
+        }
+        else if((status_id==3)||(status_id==0))
+        {
+            //ゴールに到達・もしくはゴールに到達して待機中。
+            isRobotReachedGoal = true;
+            isRobotGotGoal = false;
+            cout << "flag is true." << endl;
+        }
+        else
+        {
+            cout << "status id : " << status_id << endl; 
+            isRobotReachedGoal = true;
+            isRobotGotGoal = false;
+            blackList.push_back(test.front());
+            cout << "black list : " << blackList.front() << endl;
+            
+        }
+        
+        cout << "status_id : " << status_id << endl;
     }
     else
     {
 
     }
-    cout << "status_id : " << status_id << endl;
-    if(status_id==1)
-    {
-        //移動中
-        isRobotReachedGoal = false;
-    }
-
-    if((status_id==3)||(status_id==0))
-    {
-        //ゴールに到達・もしくはゴールに到達して待機中。
-        isRobotReachedGoal = true;
-        cout << "flag is true." << endl;
-    }
-
 }
 
 
@@ -297,14 +378,20 @@ int main(int argc, char **argv)
     plan p;
     ros::Time planStartTime=ros::Time::now();
     ExpLib::Struct::subStruct<exploration_msgs::FrontierArray> frontierCoordinatesSub("/extraction_target",1);
-    ExpLib::Struct::subStruct<nav_msgs::Odometry> odometrySub("/robot1/odom",1);
+    ExpLib::Struct::subStruct<geometry_msgs::PoseStamped> odometrySub("/robot1/pose",1);
     //ExpLib::Struct::subStruct<actionlib_msgs::GoalStatus> goalStatusSub("/robot1/move_base/status",1,&plan::navStatusCallBack ,p);
     ExpLib::Struct::pubStruct<geometry_msgs::PoseStamped> goalPosePub("/robot1/move_base_simple/goal",1);
+    ros::NodeHandle nh1;
     ros::NodeHandle nh2;
-    ros::Subscriber move_base_status_sub;
-    ros::CallbackQueue queue;
-    nh2.setCallbackQueue(&queue);
-    move_base_status_sub = nh2.subscribe<actionlib_msgs::GoalStatusArray>("/robot1/move_base/status", 1, &navStatusCallBack);
+    ros::Subscriber move_base_status_sub1;
+    ros::Subscriber move_base_status_sub2;
+    ros::CallbackQueue queue1;
+    ros::CallbackQueue queue2;
+    nh1.setCallbackQueue(&queue1);
+    nh2.setCallbackQueue(&queue2);
+    move_base_status_sub1 = nh1.subscribe<actionlib_msgs::GoalStatusArray>("/robot1/move_base/status", 1, &navStatusCallBack1);
+    move_base_status_sub2 = nh2.subscribe<actionlib_msgs::GoalStatusArray>("/robot1/move_base/status", 1, &navStatusCallBack2);
+
     firstTurn();
     while (ros::ok())
     {
@@ -331,7 +418,7 @@ int main(int argc, char **argv)
         cout << "combinatedPathesResult size : " << combinatedPathesResult.size() << endl;
         if(combinatedPathesResult.size()!=0)
         {
-            std::vector<geometry_msgs::PoseStamped> test=p.robotToTarget(combinatedPathesResult,robotDatas);
+            test=p.robotToTarget(combinatedPathesResult,robotDatas);
             test.front().header.stamp = p.timeStampGetter();
             cout << "test size : " << test.size() << endl;
             if(test.size()!=0)
@@ -342,7 +429,7 @@ int main(int argc, char **argv)
             else
             {
                 cout << "exploration time = " << (ros::Time::now() - planStartTime).toSec() << "[s]" << endl;
-                break;
+                goto END;
             }
         }
         else
@@ -350,24 +437,36 @@ int main(int argc, char **argv)
             cout << "exploration time = " << (ros::Time::now() - planStartTime).toSec() << "[s]" << endl;
             continue;
         }
-        cout << "plan end" << endl;
-        sleep(0.5);
-        
-        while(isRobotReachedGoal == false && ros::ok())
+        bool timeOutFlag = false;
+        while(isRobotGotGoal == false && ros::ok())
         {
-            cout << "1" << endl;
-            queue.callOne(ros::WallDuration(0.1));
-            cout << "2" << endl;
-            if(isRobotReachedGoal == true)
+            cout << "loop1" << endl;
+            queue1.callOne(ros::WallDuration(0.3));
+            if(isRobotGotGoal == true)
             {
-                cout << "3" << endl;
                 break;
             }
-            cout << "4" << endl;
+            else
+            {
+            }
+            usleep(1.0*100000);
         }
-        cout << "5" << endl;
+        isRobotGotGoal = false;
+        while(isRobotReachedGoal == false && ros::ok())
+        {
+            cout << "loop2" << endl;
+            queue2.callOne(ros::WallDuration(0.3));
+            if(isRobotReachedGoal == true)
+            {
+                break;
+            }            
+            usleep(1.0 * 100000);
+        }
+        test.clear();
         isRobotReachedGoal = false;
+        cout << "plan end" << endl;
     }
-    
+    END:
+    blackList.clear();
     return 0;
 }
